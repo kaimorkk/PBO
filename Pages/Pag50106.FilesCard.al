@@ -91,7 +91,7 @@ page 50106 "Files Card"
                 field("File Custodian"; Rec."File Custodian")
                 {
                     ToolTip = 'Specifies the value of the File Custodian field.';
-                    Caption = 'Custodian';
+                    Caption = 'Department';
                 }
                 field("Task Status"; Rec."File Status")
                 {

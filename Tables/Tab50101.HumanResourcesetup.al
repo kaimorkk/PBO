@@ -44,6 +44,49 @@ table 50101 "HR setup"
             DataClassification = ToBeClassified;
             TableRelation = "No. Series";
         }
+        field(9; "Leave Application Nos."; Code[40])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(10; "Default Leave Posting Template"; Code[30])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(11; "Positive Leave Posting Batch"; Code[10])
+        {
+            // TableRelation = "HR Leave Journal Batch".Name;
+            Caption = 'Positive Leave Posting Batch';
+        }
+        field(12; "Leave Posting Period[FROM]"; Date)
+        {
+            Caption = 'Leave Posting Period[FROM]';
+        }
+        field(13; "Leave Posting Period[TO]"; Date)
+        {
+            Caption = 'Leave Posting Period[TO]';
+        }
+        field(14; "Negative Leave Posting Batch"; Code[10])
+        {
+            TableRelation = "HR Leave Journal Batch".Name;
+            Caption = 'Negative Leave Posting Batch';
+        }
+        field(15; "Leave Reimbursment Nos."; Code[40])
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = "No. Series";
+        }
+        field(16; "Leave Template"; Code[50])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(17; "Base Calendar"; Code[30])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(18; "Leave Batch"; Code[40])
+        {
+            DataClassification = ToBeClassified;
+        }
     }
     keys
     {

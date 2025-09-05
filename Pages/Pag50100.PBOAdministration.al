@@ -221,6 +221,66 @@ page 50100 "PBO Administration"
                     }
                 }
             }
+            group("HR Leave Management")
+            {
+                Caption = 'HR Leave Management';
+                Image = HumanResources;
+                group("HR Leave Application")
+                {
+                    action("HR Leave Application New")
+                    {
+                        ApplicationArea = Basic;
+                        Caption = 'HR Leave Application New';
+                        RunObject = page "HR Leave Applications List";
+                        RunPageLink = Status = const(New);
+                        ToolTip = 'Executes the HR Leave Application action.';
+                    }
+                    action("HR Leave Application Pending")
+                    {
+                        ApplicationArea = Basic;
+                        Caption = 'HR Leave Application Pending';
+                        RunObject = page "HR Leave Applications List";
+                        RunPageLink = Status = const("Pending Approval");
+                        ToolTip = 'Executes the HR Leave Application action.';
+                    }
+                    action("HR Leave Application Approved")
+                    {
+                        ApplicationArea = Basic;
+                        Caption = 'HR Leave Application Approved';
+                        RunObject = page "HR Leave Applications List";
+                        RunPageLink = Status = const(Approved);
+                        ToolTip = 'Executes the HR Leave Application action.';
+                    }
+                    action("HR Leave Application Rejected")
+                    {
+                        ApplicationArea = Basic;
+                        Caption = 'HR Leave Application Rejected';
+                        RunObject = page "HR Leave Applications List";
+                        RunPageLink = Status = const(Rejected);
+                        ToolTip = 'Executes the HR Leave Application action.';
+                    }
+                }
+                action("HR Leave Reimbursment ")
+                {
+                    ApplicationArea = Basic;
+                    Caption = 'HR Leave Reimbursment ';
+                    RunObject = page "HR Leave Reimbursment List";
+                    ToolTip = 'Executes the HR Leave Reimbursment  action.';
+                }
+                action("HR Leave Types")
+                {
+                    ApplicationArea = Basic;
+                    Caption = 'HR Leave Types';
+                    RunObject = page "HR Leave Types";
+                    ToolTip = 'Executes the HR Leave Types action.';
+                }
+                action("Leave Adjustment")
+                {
+                    ApplicationArea = all;
+                    RunObject = page "HR Leave Journal Lines";
+                    Caption = 'Hr Leave Adjustment';
+                }
+            }
             group(Setups)
             {
                 action("User Setup")

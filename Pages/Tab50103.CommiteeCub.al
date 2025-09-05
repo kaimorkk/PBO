@@ -74,11 +74,37 @@ table 50103 "Committee Cub Members"
             Clustered = true;
         }
     }
+    
 
     fieldgroups { }
     
     var
         Board: Record Employee;
         Directors: Record Vendor;
+        PBOMeetings:Record "PBO Meetings";
+        trigger OnModify()
+        var
+            myInt: Integer;
+        begin
+             PBOMeetings.Reset();
+            PBOMeetings.SetRange("Meeting Code",Rec."Commitee Code");
+            if PBOMeetings.FindFirst() then begin
+                if PBOMeetings."Meeting Status"<>PBOMeetings."Meeting Status"::Open then
+                Error('You cannot modify any Commitee cub at this stage');
+            end;
+            
+        end;
+        trigger OnDelete()
+        var
+            myInt: Integer;
+        begin
+            PBOMeetings.Reset();
+            PBOMeetings.SetRange("Meeting Code",Rec."Commitee Code");
+            if PBOMeetings.FindFirst() then begin
+                if PBOMeetings."Meeting Status"<>PBOMeetings."Meeting Status"::Open then
+                Error('You cannot delete any Commitee cub at this stage');
+            end;
+            
+        end;
 }
 
