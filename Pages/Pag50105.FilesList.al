@@ -40,19 +40,16 @@ page 50105 "Tasks List"
                 // {
                 //     ToolTip = 'Specifies the value of the Policy Files Types field.';
                 // }
-                field("File/Member No."; Rec."File/Member No.")
+                field("Author"; Rec."Author")
                 {
                     ToolTip = 'Specifies the value of the File/Member No. field.';
                 }
-                field("File Name/Descrption"; Rec."File Name/Descrption")
-                {
-                    ToolTip = 'Specifies the value of the File Name/Descrption field.';
-                }
-                field("File Custodian"; Rec."File Custodian")
+                
+                field(Department; Rec.Department)
                 {
                     ToolTip = 'Specifies the value of the File Custodian field.';
                 }
-                field("File Status"; Rec."File Status")
+                field("Task Status"; Rec."Task Status")
                 {
                     ToolTip = 'Specifies the value of the Stage field.';
                 }

@@ -61,14 +61,8 @@
             Caption = 'Location';
             TableRelation = "Task Stations"."Station Code";
         }
-        field(5; "Year Opened"; Integer)
-        {
-            Caption = 'Year Opened';
-        }
-        field(6; "Year of Closure"; Integer)
-        {
-            Caption = 'Year of Closure';
-        }
+        
+        
         field(7; "Closed By"; Code[100])
         {
             Caption = 'Closed By';
@@ -172,6 +166,43 @@
         {
             Caption = 'Batch';
         }
+         field(30;  "Task Date"; Date)
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(31; Department; Code[100])
+        {
+            DataClassification = ToBeClassified;
+           TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1));
+        }
+        field(32; "Description/Subject"; Text[500])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(33; Reference; Text[300])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(34; "Remarks"; Text[400])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(35; Feedback; Text[500])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(36; Action; Text[500])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(37;  "Date Received";  Date)
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(38;  "Incoming Date"; Date)
+        {
+            DataClassification = ToBeClassified;
+        }
     }
     keys
     {
@@ -192,7 +223,7 @@
         UserSetup: Record "User Setup";
         SeriesSetup: Record "HR setup";
     begin
-        "Year Opened" := Date2DMY(Today, 3);
+        "Incoming Date" := Today;
         //end;
         "Created By" := userID;
         "Created at" := Today;

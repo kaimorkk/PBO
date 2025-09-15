@@ -48,6 +48,10 @@ page 50102 "PBO Meeting Card"
                 {
                     ToolTip = 'Specifies the value of the Meeting Time field.', Comment = '%';
                 }
+                field("Brown-Bag"; "Brown-Bag")
+                {
+                    ApplicationArea = all;
+                }
                 field("Captured By"; Rec."Captured By")
                 {
                     ToolTip = 'Specifies the value of the Captured By field.', Comment = '%';

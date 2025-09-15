@@ -8,48 +8,26 @@ enum 50100 "File Types"
     {
 
     }
-    value(1; "Administration")
+    value(1; Dispatch)
     {
-        Caption = 'Administration Tasks';
+        Caption = 'Dispatch';
     }
-    value(2; "Collaboration")
+    value(2; "Incoming Correspondences")
     {
-        Caption = 'Collaboration Tasks';
+        Caption = 'Incoming Correspondences';
     }
-    value(3; "Procurement Tasks")
+    value(3; "Incoming Legislative Costing")
     {
-        Caption = 'Procurement Tasks';
+        Caption = 'Incoming Legislative Costing';
     }
-    value(4; "Accounts File")
+    value(4; "Incoming Legislative Proposals")
     {
-        Caption = 'Accounts File';
+        Caption = 'Incoming Legislative Proposals';
     }
-    value(5; "Confidential Tasks")
+
+    value(11; "Other Tasks")
     {
-        Caption = 'Confidential Tasks';
-    }
-    value(6; "ICT Tasks")
-    {
-        Caption = 'ICT Tasks';
-    }
-    value(7; Mails)
-    {
-        Caption = 'Mail';
-    }
-    value(8; "Secret Tasks")
-    {
-        Caption = 'Secret Tasks';
-    }
-    value(9; "Top secret")
-    {
-        Caption = 'Top Secret Tasks';
-    }
-    value(10; "Pyscho-social Tasks")
-    {
-        Caption = 'Pyscho-social Tasks';
-    }
-    value(11; "Hr Tasks")
-    {
+        Caption = 'Other Tasks';
     }
 
 

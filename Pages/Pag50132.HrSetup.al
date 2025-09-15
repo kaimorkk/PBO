@@ -44,6 +44,26 @@ page 50132 "Hr Setup"
                 {
                     ToolTip = 'Specifies the value of the Volume Entry No. field.', Comment = '%';
                 }
+                field("Leave Application Nos."; "Leave Application Nos.")
+                {
+                    ApplicationArea = ALL;
+                }
+                field("Leave Posting Period[FROM]"; "Leave Posting Period[FROM]")
+                {
+                    ApplicationArea = all;
+                }
+                field("Leave Posting Period[TO]"; "Leave Posting Period[TO]")
+                {
+                    ApplicationArea = all;
+                }
+                field("Leave Batch"; "Leave Batch")
+                {
+                    ApplicationArea = all;
+                }
+                field("Leave Template"; "Leave Template")
+                {
+                    ApplicationArea = all;
+                }
             }
         }
     }

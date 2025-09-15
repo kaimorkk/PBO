@@ -566,7 +566,7 @@ page 50114 "Task Tracker Card"
 
                 trigger OnAction()
                 begin
-                    if rec."File Type" <> rec."File Type"::Mails then
+                    if rec."File Type" <> rec."File Type"::"Other Tasks" then
                         Rec.TestField("Task Request Status", Rec."Task Request Status"::Requested);
                     Rec.TestField("Volume Entry No.");
                     Rec.TestField("Move to");
@@ -1293,9 +1293,9 @@ page 50114 "Task Tracker Card"
             RejextedDoc := true;
             RecallVisible := false;
         end;
-        if Rec."File Type" = Rec."File Type"::Administration then
-            MeminfoEdit := false else
-            MeminfoEdit := true;
+        // if Rec."File Type" = Rec."File Type"::Administration then
+        //     MeminfoEdit := false else
+        //     MeminfoEdit := true;
     end;
 
     var

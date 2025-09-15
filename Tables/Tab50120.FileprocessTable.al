@@ -56,8 +56,7 @@
                         FilesTable.Reset();
                         FilesTable.SetRange("No.", FileVolumes."File No.");
                         if FilesTable.FindFirst() then
-                            BatchLines."Member No." := FilesTable."File/Member No.";
-                        BatchLines."Staff PF No." := FilesTable."Staff PF No.";
+                            BatchLines."Member No." := FilesTable."Author";
                         BatchLines."Member Name" := FilesTable."File Name/Descrption";
                         BatchLines.Insert();
                     until FileVolumes.Next() = 0;

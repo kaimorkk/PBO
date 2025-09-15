@@ -47,6 +47,7 @@ table 50101 "HR setup"
         field(9; "Leave Application Nos."; Code[40])
         {
             DataClassification = ToBeClassified;
+            TableRelation = "No. Series";
         }
         field(10; "Default Leave Posting Template"; Code[30])
         {
@@ -84,6 +85,10 @@ table 50101 "HR setup"
             DataClassification = ToBeClassified;
         }
         field(18; "Leave Batch"; Code[40])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(19; "Allow Send Sms"; Boolean)
         {
             DataClassification = ToBeClassified;
         }

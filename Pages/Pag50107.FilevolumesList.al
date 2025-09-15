@@ -9,6 +9,9 @@ page 50107 "Task Volumes List"
     SourceTable = "Task Volumes";
     //CardPageId = "Task Volumes Card";
     UsageCategory = Lists;
+    InsertAllowed = false;
+    DeleteAllowed = false;
+    Editable = false;
 
 
     layout
@@ -38,6 +41,7 @@ page 50107 "Task Volumes List"
                 {
                     ApplicationArea = All;
                     Caption = 'Volume';
+                    Visible = false;
                     ToolTip = 'Specifies the value of the Batch No. field.';
                 }
                 // field("Archived By"; Rec."Archived By")
@@ -48,7 +52,17 @@ page 50107 "Task Volumes List"
                 field("Volume Status"; Rec."Volume Status")
                 {
                     ApplicationArea = All;
+                    Visible = false;
                     ToolTip = 'Specifies the value of the Volume Status field.';
+                }
+
+                field(Department; Department)
+                {
+                    ApplicationArea = all;
+                }
+                field(Remarks; Remarks)
+                {
+                    ApplicationArea = all;
                 }
 
                 // field("Closed By"; Rec."Closed By")
@@ -65,21 +79,27 @@ page 50107 "Task Volumes List"
                 field(Location; Rec.Location)
                 {
                     ApplicationArea = All;
+                    Visible = false;
                     ToolTip = 'Specifies the value of the Location field.';
                 }
                 field("Archived "; Rec."Archived")
                 {
                     ApplicationArea = All;
+                    Visible = false;
                     ToolTip = 'Specifies the value of the Archived  field.';
+                }
+                field(Action; Action)
+                {
+                    ApplicationArea = all;
                 }
 
 
-                field("Year Opened"; Rec."Year Opened")
+                field("Incoming Date"; "Incoming Date")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Year Opened field.';
                 }
-                field("Year of Closure"; Rec."Year of Closure")
+                field("Date Received"; "Date Received")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Year of Closure field.';

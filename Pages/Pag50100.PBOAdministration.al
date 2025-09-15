@@ -79,15 +79,25 @@ page 50100 "PBO Administration"
                     action("Task Details List")
                     {
                         ApplicationArea = Basic, Suite;
-                        Caption = 'Task Details List';
+                        Caption = 'Open Task Details';
                         RunObject = page "Tasks List";
+                        RunPageLink = "Task Status" = filter(Open);
                     }
-                    action("Task Volumes List")
+                    action("Forwarded Task List")
                     {
                         ApplicationArea = Basic, Suite;
-                        Caption = 'Task Volumes List';
-                        RunObject = page "Task Volumes List";
+                        Caption = 'Forwarded Task List';
+                        RunObject = page "Tasks List";
+                        RunPageLink = "Task Status" = filter(Forwared);
                     }
+                    action("Archived Task List")
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Archived Task List';
+                        RunObject = page "Tasks List";
+                        RunPageLink = "Task Status" = filter(Archived);
+                    }
+
                     action("Task Locations")
                     {
                         ApplicationArea = Basic, Suite;

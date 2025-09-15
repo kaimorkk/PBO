@@ -64,6 +64,10 @@
             DataClassification = ToBeClassified;
             Caption='Document Comment';
         }
+        field(10;"Brown-Bag"; Boolean)
+        {
+            DataClassification = ToBeClassified;
+        }
     }
     keys
     {

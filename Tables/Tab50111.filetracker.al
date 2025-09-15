@@ -19,8 +19,8 @@ table 50111 "Task Tracker"
                 FilesTable.SETRANGE(FilesTable."Entry No.", "File Number");
                 if FilesTable.FIND('-') then begin
                     "Member Name" := FilesTable."File Name/Descrption";
-                    "ID No." := FilesTable."File/Member No.";
-                    "Staff No" := FilesTable."File Custodian";
+                    "ID No." := FilesTable."Author";
+                    "Staff No" := FilesTable.Department;
                 end;
                 // if Cust.Get("File Number") then begin
                 //     "Member Name" := Cust.Name;
