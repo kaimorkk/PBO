@@ -41,7 +41,6 @@ page 50103 "Meeting task"
                 field(Task; Rec.Task)
                 {
                     ToolTip = 'Specifies the value of the Remarks field.', Comment = '%';
-                    MultiLine = true;
 
                 }
             }
