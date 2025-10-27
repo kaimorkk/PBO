@@ -25,6 +25,11 @@ pageextension 50100 "Extends User setup" extends "User Setup"
             {
                 ApplicationArea = all;
             }
+            field("Can Login"; "Can Login")
+            {
+                ApplicationArea = all;
+            }
+
         }
     }
 

@@ -1,5 +1,6 @@
 namespace PBO.PBO;
 using System.Utilities;
+using System.Security.User;
 using System.IO;
 using Microsoft.Foundation.Attachment;
 using Microsoft.Foundation.Company;
@@ -293,6 +294,26 @@ codeunit 50109 "Hr Portal"
 
 
     end;
+
+    procedure CheckUserCanLogin(StaffN: Code[50]) Status: Boolean;
+    var
+        myInt: Integer;
+        userSet: Record "User Setup";
+    begin
+        Status := false;
+        userSet.Reset();
+        userSet.SetRange("Staff No", StaffN);
+        if userSet.FindFirst() then begin
+            if userSet."Can Login" = true then
+                Status := true
+            else
+                Status := false;
+            exit(Status);
+        end else
+            exit(Status);
+    end;
+
+
 
     procedure FnResetPassword(emailaddress: Text) passChangestatus: Text
     var
