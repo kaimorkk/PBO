@@ -19,7 +19,7 @@ table 50144 "Login Register"
         {
             DataClassification = EndUserIdentifiableInformation;
             Caption = 'User ID';
-            TableRelation = User."User Name";
+            TableRelation = "User Setup";
         }
         field(3; "Login Date"; Date)
         {
@@ -55,9 +55,6 @@ table 50144 "Login Register"
         key(PK; "Entry No.")
         {
             Clustered = true;
-        }
-        key(Key2; "User ID", "Login Date")
-        {
         }
     }
 

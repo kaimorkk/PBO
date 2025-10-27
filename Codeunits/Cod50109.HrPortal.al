@@ -118,6 +118,49 @@ codeunit 50109 "Hr Portal"
         exit(LoginRegister."Entry No.");
     end;
 
+    procedure DeleteTaskFile(EntrCode: Code[30])
+    var
+        myInt: Integer;
+        TaskVolumes: Record "Files Table";
+    begin
+        TaskVolumes.Reset();
+        TaskVolumes.SetRange("Entry No.", EntrCode);
+        if TaskVolumes.FindFirst() then
+            TaskVolumes.Delete();
+
+    end;
+
+    procedure EditTaskfiles(EntrCode: Code[40]; AuthorCode: Code[40]; reference: Code[200]; TaskDate: Date; Departmen: Text; Receiver: Code[40]; Remarks: Text; Action: Text; DocTyp: Integer): Text
+    var
+
+        myInt: Integer;
+        TaskVolumes: Record "Files Table";
+        MembNoSeries: Record "HR setup";
+        NoSeriesMgt: Codeunit NoSeriesManagement;
+        DocNo: Code[30];
+    begin
+        TaskVolumes.Reset();
+        TaskVolumes.SetRange("Entry No.", EntrCode);
+        if TaskVolumes.FindFirst() then begin
+            TaskVolumes."Document Type" := DocTyp;
+            TaskVolumes.Validate(TaskVolumes."Document Type");
+            MembNoSeries.TestField(MembNoSeries."File Entry No.");
+            // DocNo := NoSeriesMgt.GetNextNo(MembNoSeries."File Entry No.", 0D, True);
+            //  TaskVolumes."Entry No." := DocNo;
+            TaskVolumes."Author Code" := AuthorCode;
+            TaskVolumes.Validate(TaskVolumes."Author Code");
+            TaskVolumes.Reference := Reference;
+            TaskVolumes."Task Date" := TaskDate;
+            TaskVolumes.Receiver := Receiver;
+            TaskVolumes.Department := Departmen;
+            TaskVolumes.Action := Action;
+            TaskVolumes."Task Status" := TaskVolumes."Task Status"::Open;
+            // TaskVolumes.Feedback := FileTabes.Feedback;
+            TaskVolumes.Remarks := Remarks;
+            TaskVolumes.Modify();
+        end;
+    end;
+
     procedure CreatFilesTask(AuthorCode: Code[40]; reference: Code[200]; TaskDate: Date; Departmen: Text; Receiver: Code[40]; Remarks: Text; Action: Text; DocTyp: Integer): code[40]
     var
         myInt: Integer;
@@ -133,9 +176,9 @@ codeunit 50109 "Hr Portal"
         MembNoSeries.Get;
         TaskVolumes."Document Type" := DocTyp;
         TaskVolumes.Validate(TaskVolumes."Document Type");
-        MembNoSeries.TestField(MembNoSeries."File Entry No.");
-        DocNo := NoSeriesMgt.GetNextNo(MembNoSeries."File Entry No.", 0D, True);
-        TaskVolumes."Entry No." := DocNo;
+        //MembNoSeries.TestField(MembNoSeries."File Entry No.");
+        // DocNo := NoSeriesMgt.GetNextNo(MembNoSeries."File Entry No.", 0D, True);
+        //  TaskVolumes."Entry No." := DocNo;
         TaskVolumes."Author Code" := AuthorCode;
         TaskVolumes.Validate(TaskVolumes."Author Code");
         TaskVolumes.Reference := Reference;
