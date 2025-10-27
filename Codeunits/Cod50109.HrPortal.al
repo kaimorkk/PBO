@@ -294,7 +294,7 @@ codeunit 50109 "Hr Portal"
 
     end;
 
-    procedure FnResetPassword(emailaddress: Text) passChangestatus: Text
+    procedure FnResetPassword(emailaddress: Text)
     var
         PortalUser: Record "portal User";
         RandomDigit: Text;
@@ -313,17 +313,16 @@ codeunit 50109 "Hr Portal"
             PortalUser."Change Password" := false;
             PortalUser."Record Type" := PortalUser."record type"::"Job Applicant";
             if PortalUser.Modify(true) then begin
-                passChangestatus := 'success*Password Reset Successfully. Kindly check your email';
                 SendEmail(emailaddress);
             end else begin
-                passChangestatus := 'danger*The Password was Not Modified';
+                Error("Password not reset, Kindly try again!")
             end;
         end else begin
-            passChangestatus := 'emailnotfound*Email Address is Missing';
+            Error("Email Address is Missing1")
         end;
     end;
 
-    procedure CreatePortalUser(Name: Text; IdNumber: Code[40]; emailaddress: Text) status: Text
+    procedure CreatePortalUser(Name: Text; IdNumber: Code[40]; emailaddress: Text)
     var
         myInt: Integer;
         RandomDigit: Text[50];
@@ -347,8 +346,8 @@ codeunit 50109 "Hr Portal"
             RandomDigit := CopyStr(RandomDigit, 1, 8);
             PortalUSer."Password Value" := RandomDigit;
             PortalUSer."Last Modified Date" := Today;
-            if PortalUSer.Insert(true) then begin
-                status := 'success* Your account has been created successfully';
+            if not PortalUSer.Insert(true) then begin
+                Error("Account creation not successfull, Kindly contact ICT!")
             end;
         end;
 
@@ -377,7 +376,7 @@ codeunit 50109 "Hr Portal"
         end;
     end;
 
-    procedure NotifyCommittee(MeetingCode: Code[20]): Text
+    procedure NotifyCommittee(MeetingCode: Code[20])
     var
         myInt: Integer;
         AccName: Text;
@@ -410,9 +409,7 @@ codeunit 50109 "Hr Portal"
                         Email.Send(EmailManager, Enum::"Email Scenario"::Default);
                     end;
                 until HRDiscipMemb.Next() = 0;
-            exit('Email sent successfully');
-        end else
-            exit('Email not sent!');
+        end;
 
     end;
 
