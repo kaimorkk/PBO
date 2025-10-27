@@ -118,7 +118,7 @@ codeunit 50109 "Hr Portal"
         exit(LoginRegister."Entry No.");
     end;
 
-    procedure CreatFilesTask(AuthorCode: Code[40]; reference: Code[200]; TaskDate: Date; Departmen: Text; Receiver: Code[40]; Remarks: Text; Action: Text): code[40]
+    procedure CreatFilesTask(AuthorCode: Code[40]; reference: Code[200]; TaskDate: Date; Departmen: Text; Receiver: Code[40]; Remarks: Text; Action: Text; DocTyp: Integer): code[40]
     var
         myInt: Integer;
         TaskVolumes: Record "Files Table";
@@ -131,6 +131,8 @@ codeunit 50109 "Hr Portal"
         TaskVolumes.Init();
         DocNo := '';
         MembNoSeries.Get;
+        TaskVolumes."Document Type" := DocTyp;
+        TaskVolumes.Validate(TaskVolumes."Document Type");
         MembNoSeries.TestField(MembNoSeries."File Entry No.");
         DocNo := NoSeriesMgt.GetNextNo(MembNoSeries."File Entry No.", 0D, True);
         TaskVolumes."Entry No." := DocNo;
