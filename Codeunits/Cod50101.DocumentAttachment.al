@@ -5,9 +5,16 @@ codeunit 50101 DocumentAttachment
     local procedure OnBeforeDrillDown(DocumentAttachment: Record "Document Attachment"; var RecRef: RecordRef);
     var
         PBOMeetings: Record "PBO Meetings";
+        FilesTable: Record "Files Table";
 
     begin
         case DocumentAttachment."Table ID" of
+            DATABASE::"Files Table":
+                begin
+                    RecRef.Open(DATABASE::"Files Table");
+                    if FilesTable.Get(DocumentAttachment."No.") then
+                        RecRef.GetTable(FilesTable);
+                end;
             DATABASE::"PBO Meetings":
                 begin
                     RecRef.Open(DATABASE::"PBO Meetings");
@@ -23,11 +30,18 @@ codeunit 50101 DocumentAttachment
         FieldRef: FieldRef;
         RecNo: Code[20];
         PBOMeetings: Record "PBO Meetings";
+        FilesTable: Record "Files Table";
 
 
 
     begin
         case RecRef.Number of
+            DATABASE::"Files Table":
+                begin
+                    FieldRef := RecRef.Field(1);
+                    RecNo := FieldRef.Value;
+                    DocumentAttachment.SetRange("No.", RecNo);
+                end;
             DATABASE::"PBO Meetings":
                 begin
                     FieldRef := RecRef.Field(1);
@@ -48,6 +62,12 @@ codeunit 50101 DocumentAttachment
 
     begin
         case RecRef.Number of
+            DATABASE::"Files Table":
+                begin
+                    FieldRef := RecRef.Field(1);
+                    RecNo := FieldRef.Value;
+                    DocumentAttachment.Validate("No.", RecNo);
+                end;
             DATABASE::"PBO Meetings":
                 begin
                     FieldRef := RecRef.Field(1);

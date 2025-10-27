@@ -17,6 +17,14 @@ pageextension 50100 "Extends User setup" extends "User Setup"
                 ApplicationArea = all;
 
             }
+            field("Staff No"; "Staff No")
+            {
+                ApplicationArea = all;
+            }
+            field("E-Mail"; "E-Mail")
+            {
+                ApplicationArea = all;
+            }
         }
     }
 

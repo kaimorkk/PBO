@@ -21,6 +21,14 @@ page 50101 "PBO Meeting List"
                 {
                     ToolTip = 'Specifies the value of the Meeting Summary field.', Comment = '%';
                 }
+                field(Department; Department)
+                {
+                    ApplicationArea = all;
+                }
+                field("Department Name"; "Department Name")
+                {
+                    ApplicationArea = all;
+                }
                 field("Meeting Date"; Rec."Meeting Date")
                 {
                     ToolTip = 'Specifies the value of the Meeting Date field.', Comment = '%';

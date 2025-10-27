@@ -44,6 +44,14 @@ page 50102 "PBO Meeting Card"
 
                     end;
                 }
+                field(Department; Department)
+                {
+                    ApplicationArea = all;
+                }
+                field("Department Name"; "Department Name")
+                {
+                    ApplicationArea = all;
+                }
                 field("Meeting Time"; Rec."Meeting Time")
                 {
                     ToolTip = 'Specifies the value of the Meeting Time field.', Comment = '%';

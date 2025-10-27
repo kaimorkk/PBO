@@ -3,6 +3,7 @@ namespace PBO.PBO;
 using System.Security.User;
 using Microsoft.Finance.Dimension;
 using Microsoft.Inventory.Location;
+using Microsoft.HumanResources.Employee;
 
 tableextension 50100 "User Setup extensions" extends "User Setup"
 {
@@ -27,6 +28,24 @@ tableextension 50100 "User Setup extensions" extends "User Setup"
         field(60001; "Adjust Leave Days"; Boolean)
         {
             DataClassification = ToBeClassified;
+        }
+        field(60003; "Staff No"; Code[40])
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = Employee;
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                EmployeeRe: Record Employee;
+            begin
+                EmployeeRe.Reset();
+                EmployeeRe.SetRange("No.", rec."Staff No");
+                if EmployeeRe.FindFirst() then begin
+                    rec."Employee Name" := EmployeeRe."Search Name";
+                    rec."E-Mail" := EmployeeRe."E-Mail";
+                end;
+
+            end;
         }
     }
 }

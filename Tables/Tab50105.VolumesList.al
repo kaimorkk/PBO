@@ -1,5 +1,5 @@
- 
-    table 50105 "Task Volumes"
+
+table 50105 "Task Volumes"
 {
     Caption = 'Task Volumes';
     DataClassification = ToBeClassified;
@@ -61,8 +61,8 @@
             Caption = 'Location';
             TableRelation = "Task Stations"."Station Code";
         }
-        
-        
+
+
         field(7; "Closed By"; Code[100])
         {
             Caption = 'Closed By';
@@ -123,9 +123,9 @@
         {
             Caption = 'Closed';
         }
-        field(22; "File Type"; Code[200])
+        field(22; "File Type"; Enum "File Types")
         {
-            TableRelation = "Files Table"."File Type";
+            // TableRelation = "Files Table"."File Type";
         }
         field(23; Description; Blob)
         {
@@ -166,14 +166,25 @@
         {
             Caption = 'Batch';
         }
-         field(30;  "Task Date"; Date)
+        field(30; "Task Date"; Date)
         {
             DataClassification = ToBeClassified;
         }
         field(31; Department; Code[100])
         {
             DataClassification = ToBeClassified;
-           TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1));
+            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1));
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                Dimes: Record "Dimension Value";
+            begin
+                Dimes.Reset();
+                Dimes.SetRange(Code, rec.Department);
+                if Dimes.FindFirst() then
+                    rec."Department Name" := Dimes.Name;
+
+            end;
         }
         field(32; "Description/Subject"; Text[500])
         {
@@ -195,14 +206,97 @@
         {
             DataClassification = ToBeClassified;
         }
-        field(37;  "Date Received";  Date)
+        field(37; "Date Received"; Date)
         {
             DataClassification = ToBeClassified;
         }
-        field(38;  "Incoming Date"; Date)
+        field(38; "Incoming Date"; Date)
         {
             DataClassification = ToBeClassified;
         }
+        field(39; Receiver; Text[100])
+        {
+            DataClassification = ToBeClassified;
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                Members: Record Employee;
+            begin
+                if Members.Get("Receiver") then begin
+                    rec."Receiver Code" := Members."No.";
+                    Rec.Receiver := Members."Search Name";
+                    rec."Reciever Mail" := Members."Company E-Mail";
+                end;
+            end;
+        }
+        field(40; Author; Text[200])
+        {
+            DataClassification = ToBeClassified;
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                Members: Record Employee;
+            begin
+
+            end;
+        }
+        field(41; "Task Status"; Option)
+        {
+            Caption = 'Task Status';
+            OptionMembers = Open,Forwared,"Archived";
+        }
+        field(42; "Document Type"; Option)
+        {
+            DataClassification = ToBeClassified;
+            OptionMembers = " ","Bill Costing","Bill Determination","Outgoing Memos","Incoming Memos","Outgoing Correspondence","Incoming Correspondence";
+
+        }
+        field(43; "Author Mail"; Text[200])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(44; "Department Name"; Text[200])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(45; "Reciever Mail"; Text[200])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(46; "Receiver Code"; Code[30])
+        {
+            DataClassification = ToBeClassified;
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                Members: Record Employee;
+            begin
+                if Members.Get("Receiver Code") then begin
+                    rec."Receiver Code" := Members."No.";
+                    Rec.Receiver := Members."Search Name";
+                    rec."Reciever Mail" := Members."Company E-Mail";
+                end;
+
+            end;
+        }
+        field(47; "Author Code"; Code[30])
+        {
+            DataClassification = ToBeClassified;
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                Members: Record Employee;
+            begin
+                if Members.Get("Author Code") then begin
+                    rec."Author Code" := Members."No.";
+                    Rec."Author" := Members."Search Name";
+                    Rec."Member Name" := Members."Search Name";
+                    rec."Author Mail" := Members."Company E-Mail";
+                end;
+
+            end;
+        }
+
     }
     keys
     {

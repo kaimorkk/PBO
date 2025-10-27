@@ -1,10 +1,10 @@
- 
-   table 50100 "PBO Meetings"
+
+table 50100 "PBO Meetings"
 {
     Caption = 'Meetings';
     DataClassification = ToBeClassified;
-    LookupPageId="PBO Meeting List";
-    DrillDownPageId="PBO Meeting List";
+    LookupPageId = "PBO Meeting List";
+    DrillDownPageId = "PBO Meeting List";
 
     fields
     {
@@ -25,7 +25,7 @@
         field(2; "Meeting Summary"; Text[700])
         {
             DataClassification = ToBeClassified;
-            
+
         }
         field(3; "Meeting Date"; Date)
         {
@@ -42,6 +42,7 @@
         {
             DataClassification = ToBeClassified;
             OptionMembers = Open,Pending,proceeding,Successful,failled;
+            OptionCaption = 'Open,Pending,proceeding,Successful,failed';
         }
         field(5; "Meeting Time"; Time)
         {
@@ -62,9 +63,29 @@
         field(9; "Document Comment"; Text[500])
         {
             DataClassification = ToBeClassified;
-            Caption='Document Comment';
+            Caption = 'Document Comment';
         }
-        field(10;"Brown-Bag"; Boolean)
+        field(10; "Brown-Bag"; Boolean)
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(11; Department; Code[100])
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1));
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                Dimes: Record "Dimension Value";
+            begin
+                Dimes.Reset();
+                Dimes.SetRange(Code, Rec.Department);
+                if Dimes.FindFirst() then
+                    "Department Name" := Dimes.Name;
+
+            end;
+        }
+        field(12; "Department Name"; Text[300])
         {
             DataClassification = ToBeClassified;
         }
@@ -86,12 +107,13 @@
             NoSeriesMgt.InitSeries(HrSetup."Meeting Code", xRec."No. Series", 0D, "Meeting Code", "No. Series");
         end;
     end;
+
     trigger OnDelete()
     var
         myInt: Integer;
     begin
-        if rec."Meeting Status"<>rec."Meeting Status"::Open then
-        Error('You cannot delete documents at this stage');
+        if rec."Meeting Status" <> rec."Meeting Status"::Open then
+            Error('You cannot delete documents at this stage');
     end;
 
     var

@@ -1,4 +1,4 @@
- 
+
 page 50105 "Tasks List"
 {
     ApplicationArea = All;
@@ -44,7 +44,7 @@ page 50105 "Tasks List"
                 {
                     ToolTip = 'Specifies the value of the File/Member No. field.';
                 }
-                
+
                 field(Department; Rec.Department)
                 {
                     ToolTip = 'Specifies the value of the File Custodian field.';
@@ -56,4 +56,62 @@ page 50105 "Tasks List"
             }
         }
     }
+    trigger OnAfterGetRecord()
+    var
+        myInt: Integer;
+    begin
+        // UserSet.Reset();
+        // UserSet.SetRange("User ID", UserId);
+        // if UserSet.FindFirst() then begin
+        //     rec.SetFilter(rec."Author Code", UserSet."Staff No");
+        // end else
+        //     Error('User setup not found!');
+
+    end;
+
+    trigger OnAfterGetCurrRecord()
+    var
+        myInt: Integer;
+    begin
+
+        // UserSet.Reset();
+        // UserSet.SetRange("User ID", UserId);
+        // if UserSet.FindFirst() then begin
+        //     rec.SetFilter(rec."Author Code", UserSet."Staff No");
+        // end else
+        //     Error('User setup not found!');
+
+    end;
+
+    trigger OnOpenPage()
+    var
+        myInt: Integer;
+
+    begin
+        if UserSet.Get(UserId) then begin
+            rec.FilterGroup(2);
+            rec.SetFilter(rec."Author Code", UserSet."Staff No");
+            rec.FilterGroup(0);
+        end;
+
+        //UserSet.Get(UserId);
+        //rec.SetFilter(rec."Author Code", UserSet."Staff No");
+
+
+    end;
+
+    trigger OnNewRecord(exre: Boolean)
+    var
+        myInt: Integer;
+        userSet: Record "User Setup";
+    begin
+        if userSet.Get(UserId) then begin
+            rec."Author Code" := userSet."Staff No";
+            rec.Validate(rec."Author Code");
+        end;
+
+    end;
+
+    var
+        UserSet: Record "User Setup";
 }

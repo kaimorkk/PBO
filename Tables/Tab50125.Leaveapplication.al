@@ -1,4 +1,4 @@
- 
+
 table 50125 "HR Leave Application"
 {
     DrillDownPageId = "HR Leave Applications List";
@@ -293,16 +293,43 @@ table 50125 "HR Leave Application"
         field(3961; "Employee No"; Code[20])
         {
             Caption = 'Employee No';
+            TableRelation = Employee;
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                Employee: Record Employee;
+            begin
+                Employee.Reset();
+                Employee.SetRange("No.", rec."Employee No");
+                if Employee.FindFirst() then begin
+                    rec."Employee Name" := Employee."Search Name";
+                    rec."Job Tittle" := Employee."Job Title";
+                end;
+
+            end;
         }
         field(3962; Supervisor; Code[50])
         {
             TableRelation = "User Setup"."User ID";
             Caption = 'Supervisor';
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                userSet: Record "User Setup";
+            begin
+                userSet.Reset();
+                userSet.SetRange("User ID", Supervisor);
+                if userSet.FindFirst() then begin
+                    Rec.Supervisor := userSet."Employee Name";
+                    rec.Modify();
+                end;
+
+            end;
         }
         field(3969; "Responsibility Center"; Code[20])
         {
             // TableRelation = "Dimension Value".Code where("Global Dimension No." = const(2));
-            TableRelation = "Responsibility Center".Code;
+            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1));
             //TableRelation = "Dimension Value".Code where("Global Dimension No." = const(2));
             Caption = 'Department';
             // CaptionClass = '1,1,2';
@@ -310,12 +337,12 @@ table 50125 "HR Leave Application"
             trigger OnValidate()
             var
                 myInt: Integer;
-                Responsblece: Record "Responsibility Center";
+                Dimes: Record Dimension;
             begin
-                Responsblece.Reset();
-                Responsblece.SetRange(Code, Rec."Responsibility Center");
-                if Responsblece.FindFirst() then
-                    "Department Name" := Responsblece.Name;
+                Dimes.Reset();
+                Dimes.SetRange(Code, Rec."Responsibility Center");
+                if Dimes.FindFirst() then
+                    "Department Name" := Dimes.Name;
 
             end;
         }
@@ -343,9 +370,9 @@ table 50125 "HR Leave Application"
         }
         field(3975; "Employee Name"; Text[100])
         {
-            CalcFormula = lookup(Employee."Search Name" where("No." = field("Employee No")));
+            // CalcFormula = lookup(Employee."Search Name" where("No." = field("Employee No")));
             Editable = false;
-            FieldClass = FlowField;
+            // FieldClass = FlowField;
             Caption = 'Employee Name';
         }
         field(3976; "On Leave"; Boolean)
@@ -455,6 +482,8 @@ table 50125 "HR Leave Application"
             // "Department acting" := HREmp."Department acting";
             // "DEpartment acting Name" := HREmp."Department acting Name";
         end;
+        rec."Application Date" := Today;
+        rec."User ID" := UserId;
 
         /*
    //check if user id is administrator and validate with employee no
@@ -554,7 +583,7 @@ table 50125 "HR Leave Application"
     var
         myInt: Integer;
     begin
-        
+
     end;
 
 
@@ -577,7 +606,7 @@ table 50125 "HR Leave Application"
         URL: Text[500];
         sDate: Record Date;
         Customized: Record "HR Calendar List";
-         HREmailParameters: Record "HR E-Mail Parameters";
+        HREmailParameters: Record "HR E-Mail Parameters";
         HRLeavePeriods: Record "HR Leave Periods";
         HRJournalBatch: Record "HR Leave Journal Batch";
         TEXT001: Label 'Days Approved cannot be more than applied days';

@@ -26,6 +26,14 @@ page 50107 "Task Volumes List"
                     Visible = false;
                     ToolTip = 'Specifies the value of the File No. field.';
                 }
+                field(Author; Author)
+                {
+                    ApplicationArea = all;
+                }
+                field(Receiver; Receiver)
+                {
+                    ApplicationArea = all;
+                }
                 // field("Volume Entry No."; Rec."Volume Entry No.")
                 // {
                 //     ApplicationArea = All;

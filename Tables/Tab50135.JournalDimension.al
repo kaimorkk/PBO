@@ -1,4 +1,4 @@
- 
+
 table 50135 "Journal Line Dimension"
 {
     Caption = 'Journal Line Dimension';
@@ -60,7 +60,7 @@ table 50135 "Journal Line Dimension"
         {
             Caption = 'Dimension Code';
             NotBlank = true;
-            TableRelation = Dimension;
+            TableRelation = "Dimension Value";
 
             trigger OnValidate()
             begin

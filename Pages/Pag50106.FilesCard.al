@@ -94,6 +94,10 @@ page 50106 "Files Card"
                     ToolTip = 'Specifies the value of the File Custodian field.';
                     Caption = 'Department';
                 }
+                field("Department Name"; "Department Name")
+                {
+                    ApplicationArea = all;
+                }
                 field("Task Status"; "Task Status")
                 {
                     ToolTip = 'Specifies the value of the Stage field.';
@@ -176,7 +180,7 @@ page 50106 "Files Card"
                     DocumentAttachmentDetails.RunModal();
                 end;
             }
-            action("Notify Receiver")
+            action("Send and Notify Receiver")
             {
                 ApplicationArea = all;
                 Promoted = true;
@@ -184,11 +188,77 @@ page 50106 "Files Card"
                 PromotedIsBig = true;
                 Image = SendAsPDF;
                 trigger OnAction()
+                var
+                    TaskVolumes: Record "Task Volumes";
+                    SeriesSetup: Record "HR setup";
+                    DocNo: Code[30];
+                    NoSeriesMgt: Codeunit NoSeriesManagement;
                 begin
-                    if Confirm('Do you want to notify receiver?') then
-                        NotifyReceiver()
-                    else
+                    if Confirm('Do you want to send and notify receiver?') then begin
+                        NotifyReceiver();
+                        DocNo := '';
+                        TaskVolumes.Reset();
+                        TaskVolumes.Init();
+                        SeriesSetup.Get;
+                        SeriesSetup.TestField(SeriesSetup."Volume Entry No.");
+                        DocNo := NoSeriesMgt.GetNextNo(SeriesSetup."Volume Entry No.", 0D, True);
+                        TaskVolumes."File No." := rec."Entry No.";
+                        TaskVolumes."Volume Entry No." := DocNo;
+                        TaskVolumes."Author Code" := rec."Author Code";
+                        TaskVolumes.Validate(TaskVolumes."Author Code");
+                        TaskVolumes."Date Received" := Today;
+                        TaskVolumes."Incoming Date" := rec."Incoming Date";
+                        TaskVolumes.Reference := rec.Reference;
+                        TaskVolumes."Task Date" := rec."Task Date";
+                        TaskVolumes."Document Type" := rec."Document Type";
+                        TaskVolumes."Receiver Code" := rec."Receiver Code";
+                        TaskVolumes.Validate(TaskVolumes."Receiver Code");
+                        TaskVolumes.Department := rec.Department;
+                        TaskVolumes.Validate(TaskVolumes.Department);
+                        TaskVolumes.Action := rec.Action;
+                        TaskVolumes."Task Status" := TaskVolumes."Task Status"::Forwared;
+                        TaskVolumes.Feedback := rec.Feedback;
+                        TaskVolumes.Remarks := rec.Remarks;
+                        if TaskVolumes.Insert() then begin
+                            rec."Author Code" := rec."Receiver Code";
+
+                            rec.Validate(rec."Author Code");
+                            rec."Reciever Mail" := '';
+                            rec.Receiver := '';
+                            rec."Task Status" := rec."Task Status"::Forwared;
+                            rec."Incoming Date" := Today;
+                            rec.Action := '';
+                            rec.Remarks := '';
+                            rec.Feedback := '';
+                            rec.Modify();
+                        end;
+                        Message('Email sent successfully');
+                        CurrPage.Close();
+
+                    end else
                         Message('Aborted!');
+                    CurrPage.Close();
+
+                end;
+            }
+            action("Close Task")
+            {
+                ApplicationArea = all;
+                Caption = 'Close Task';
+                Promoted = true;
+                PromotedCategory = Category5;
+                PromotedIsBig = true;
+                trigger OnAction()
+                var
+                    myInt: Integer;
+                begin
+                    if Confirm('Do you want to close this Task') = true then begin
+                        rec."Task Status" := rec."Task Status"::Archived;
+                        rec."Date Closed" := Today;
+                        rec."Closed By" := UserId;
+                        Message('Closed!');
+                    end else
+                        Message('Aborted');
 
                 end;
             }
@@ -196,36 +266,67 @@ page 50106 "Files Card"
         }
     }
 
+    trigger OnAfterGetRecord()
+    var
+        myInt: Integer;
+    begin
+        if rec."Task Status" = rec."Task Status"::Archived then
+            CurrPage.Editable := false;
+        // UserSet.Reset();
+        // UserSet.SetRange("User ID", UserId);
+        // if UserSet.FindFirst() then begin
+        //     rec.SetFilter("Author Code", UserSet."Staff No");
+        // end else
+        //     Error('User setup not found!');
+
+    end;
+
     //local procedure PageControl()
     trigger OnOpenPage()
     begin
+        if rec."Task Status" = rec."Task Status"::Archived then
+            CurrPage.Editable := false;
         FileTypes();
-        restrictfilescardesit()
+        restrictfilescardesit();
+        // UserSet.Reset();
+        // UserSet.SetRange("User ID", UserId);
+        // if UserSet.FindFirst() then begin
+        //     rec.SetFilter("Author Code", UserSet."Staff No");
+        // end else
+        //     Error('User setup not found!');
     end;
 
     trigger OnAfterGetCurrRecord()
     begin
         restrictfilescardesit();
+        if rec."Task Status" = rec."Task Status"::Archived then
+            CurrPage.Editable := false;
+        // UserSet.Reset();
+        // UserSet.SetRange("User ID", UserId);
+        // if UserSet.FindFirst() then begin
+        //     rec.SetFilter("Author Code", UserSet."Staff No");
+        // end else
+        //     Error('User setup not found!');
     end;
 
     local procedure restrictfilescardesit()
     var
         UserStations: Record "User Stations";
     begin
-        UserStations.Reset();
-        UserStations.SetRange("User Id", UserId);
-        UserStations.SetRange("Can Edit File Card", true);
-        if not UserStations.Find('-') then begin
-            CurrPage.Editable := false;
-        end else begin
-            CurrPage.Editable := true;
-        end;
+        // UserStations.Reset();
+        // UserStations.SetRange("User Id", UserId);
+        // UserStations.SetRange("Can Edit File Card", true);
+        // if not UserStations.Find('-') then begin
+        //     CurrPage.Editable := false;
+        // end else begin
+        //     CurrPage.Editable := true;
+        // end;
     end;
 
     local procedure FileTypes()
     begin
-        VisiblePolicyFilesTypes := false;
-        VisibleBusinessLoansFileTypes := false;
+        // VisiblePolicyFilesTypes := false;
+        // VisibleBusinessLoansFileTypes := false;
 
         // if Rec."File Type" = Rec."File Type"::"Accounts File" then begin
         //     VisibleBusinessLoansFileTypes := true;
@@ -266,11 +367,12 @@ page 50106 "Files Card"
                     Email.Send(EmailManager, Enum::"Email Scenario"::Default);
                 end;
             until HRDiscipMemb.Next() = 0;
-        Message('Email sent successfully');
+
 
     end;
     //trigger OnAfterGetRecord()
     var
         VisiblePolicyFilesTypes: Boolean;
         VisibleBusinessLoansFileTypes: Boolean;
+        UserSet: Record "User Setup";
 }

@@ -64,6 +64,30 @@ page 50132 "Hr Setup"
                 {
                     ApplicationArea = all;
                 }
+                field("Bill Costing"; "Bill Costing")
+                {
+                    ApplicationArea = all;
+                }
+                field("Bill Determination"; "Bill Determination")
+                {
+                    ApplicationArea = all;
+                }
+                field("Outgoing Correspondence"; "Outgoing Correspondence")
+                {
+                    ApplicationArea = all;
+                }
+                field("Incoming Correspondence"; "Incoming Correspondence")
+                {
+                    ApplicationArea = all;
+                }
+                field("Outgoing Memos"; "Outgoing Memos")
+                {
+                    ApplicationArea = all;
+                }
+                field("Incoming Memos"; "Incoming Memos")
+                {
+                    ApplicationArea = all;
+                }
             }
         }
     }

@@ -1,5 +1,5 @@
- 
-   table 50104 "Files Table"
+
+table 50104 "Files Table"
 {
     Caption = 'Task Movement Files';
     DataClassification = ToBeClassified;
@@ -8,7 +8,73 @@
 
     fields
     {
-        field(1; "No."; Code[100])
+        field(1; "Entry No."; Code[100])
+        {
+            Caption = 'Task No.';
+            //AutoIncrement = true;
+            trigger OnValidate()
+            begin
+                if rec."Document Type" = rec."Document Type"::"Bill Costing" then begin
+                    if "Entry No." <> xRec."Entry No." then begin
+                        MembNoSeries.Get;
+                        NoSeriesMgt.TestManual(MembNoSeries."Bill Costing");
+                        "No. Series" := '';
+                        UserSetup.Reset();
+                        UserSetup.SetRange("User ID", UserId);
+                        IF UserSetup.FindFirst() then begin
+                            rec."Author Code" := UserSetup."Staff No";
+                            rec.Validate(rec."Author Code");
+                        end;
+                    end;
+                end;
+                if rec."Document Type" = rec."Document Type"::"Bill Determination" then begin
+                    if "Entry No." <> xRec."Entry No." then begin
+                        MembNoSeries.Get;
+                        NoSeriesMgt.TestManual(MembNoSeries."Bill Determination");
+                        "No. Series" := '';
+                    end;
+                end;
+                if rec."Document Type" = rec."Document Type"::"Incoming Correspondence" then begin
+                    if "Entry No." = '' then begin
+                        MembNoSeries.Get;
+                        NoSeriesMgt.TestManual(SeriesSetup."Incoming Correspondence");
+                        "No. Series" := '';
+                        // NoSeriesMgt.InitSeries(SeriesSetup."Incoming Correspondence", xRec."No. Series", 0D, "Entry No.", "No. Series");
+                    end;
+                end;
+                if rec."Document Type" = rec."Document Type"::"Incoming Memos" then begin
+                    if "Entry No." = '' then begin
+                        MembNoSeries.Get;
+                        NoSeriesMgt.TestManual(SeriesSetup."Incoming Memos");
+                        "No. Series" := '';
+                    end;
+                end;
+                if rec."Document Type" = rec."Document Type"::"Outgoing Correspondence" then begin
+                    if "Entry No." = '' then begin
+                        MembNoSeries.Get;
+                        NoSeriesMgt.TestManual(SeriesSetup."Outgoing Correspondence");
+                        "No. Series" := '';
+                    end;
+                end;
+                if rec."Document Type" = rec."Document Type"::"Outgoing Memos" then begin
+                    if "Entry No." = '' then begin
+                        MembNoSeries.Get;
+                        NoSeriesMgt.TestManual(SeriesSetup."Outgoing Memos");
+                        "No. Series" := '';
+                    end;
+                end;
+                UserSetup.Reset();
+                UserSetup.SetRange("User ID", UserId);
+                IF UserSetup.FindFirst() then begin
+                    rec."Author Code" := UserSetup."Staff No";
+                    rec.Validate(rec."Author Code");
+                    rec.Author := UserSetup."Staff No";
+                    rec.Validate(Author);
+                end;
+
+            end;
+        }
+        field(8; "No."; Code[100])
         {
             Caption = 'File No.';
             // AutoIncrement = true;
@@ -25,13 +91,13 @@
             begin
                 "Business Loan Types" := ' ';
                 "Policy Files Types" := ' ';
-                "Author" := '';
+                // "Author" := '';
                 "File Name/Descrption" := '';
                 Department := '';
 
                 if Rec."File Type" <> Rec."File Type"::"Other Tasks" then begin
                     HRTable.RESET;
-                    HRTable.SetRange("No.", Rec.Author);
+                    HRTable.SetRange("No.", Rec."Author Code");
                     if HRTable.Find('-') then begin
                         Rec."File Name/Descrption" := HRTable.FullName();
                         Rec."Author" := HRTable."No.";
@@ -50,13 +116,13 @@
             trigger OnValidate()
             begin
                 if Members.Get("Author") then begin
-                    rec."Author Code":=Members."No.";
+                    rec."Author Code" := Members."No.";
                     // if rec."File Type" = rec."File Type"::"Member File" then begin
                     // Rec."No." := Members."No.";
                     rec."File Name/Descrption" := Members."Search Name";
                     Rec."Author" := Members."Search Name";
                     Rec."Member Name" := Members."Search Name";
-                    rec."Author Email":=Members."Company E-Mail";
+                    rec."Author Email" := Members."Company E-Mail";
                     // end;
                     // if rec."File Type" = rec."File Type"::"Accounts File" then begin
                     //     // Rec."No." := Members."No." + '-BSL';
@@ -82,32 +148,11 @@
             Caption = 'File Volume No.';
             TableRelation = "Task Volumes"."File Volume No.";
         }
-        field(8; "Entry No."; Code[100])
-        {
-            Caption = 'Entry No.';
-            //AutoIncrement = true;
-            trigger OnValidate()
-            begin
-                if rec."Document Type" = rec."Document Type"::Task then begin
-                    if "Entry No." <> xRec."Entry No." then begin
-                        MembNoSeries.Get;
-                        NoSeriesMgt.TestManual(MembNoSeries."File Entry No.");
-                        "No. Series" := '';
-                    end;
-                end;
-                if rec."Document Type" = rec."Document Type"::Mail then begin
-                    if "Entry No." <> xRec."Entry No." then begin
-                        MembNoSeries.Get;
-                        NoSeriesMgt.TestManual(MembNoSeries."Mail Entry No");
-                        "No. Series" := '';
-                    end;
-                end;
-            end;
-        }
+
         field(9; "No. Series"; Code[100])
         {
         }
-         
+
         field(11; "Member Name"; Code[200])
         {
         }
@@ -132,25 +177,31 @@
         }
         field(17; "Document Type"; Option)
         {
-            OptionMembers = " ",Task,Mail;
-            OptionCaption = '" ",Task,Mail';
+            OptionMembers = " ","Bill Costing","Bill Determination","Outgoing Memos","Incoming Memos","Outgoing Correspondence","Incoming Correspondence";
             trigger OnValidate()
             var
                 myInt: Integer;
             begin
                 "Entry No." := '';
-                if rec."Document Type" = rec."Document Type"::Task then begin
+                if rec."Document Type" = rec."Document Type"::"Bill Costing" then begin
                     if "Entry No." = '' then begin
                         SeriesSetup.Get;
-                        SeriesSetup.TestField(SeriesSetup."File Entry No.");
-                        NoSeriesMgt.InitSeries(SeriesSetup."File Entry No.", xRec."No. Series", 0D, "Entry No.", "No. Series");
+                        SeriesSetup.TestField(SeriesSetup."Bill Costing");
+                        NoSeriesMgt.InitSeries(SeriesSetup."Bill Costing", xRec."No. Series", 0D, "Entry No.", "No. Series");
                     end;
                 end;
-                if rec."Document Type" = rec."Document Type"::Mail then begin
+                if rec."Document Type" = rec."Document Type"::"Bill Determination" then begin
                     if "Entry No." = '' then begin
                         SeriesSetup.Get;
-                        SeriesSetup.TestField(SeriesSetup."Mail Entry No");
-                        NoSeriesMgt.InitSeries(SeriesSetup."Mail Entry No", xRec."No. Series", 0D, "Entry No.", "No. Series");
+                        SeriesSetup.TestField(SeriesSetup."Bill Determination");
+                        NoSeriesMgt.InitSeries(SeriesSetup."Bill Determination", xRec."No. Series", 0D, "Entry No.", "No. Series");
+                    end;
+                end;
+                if rec."Document Type" = rec."Document Type"::"Bill Determination" then begin
+                    if "Entry No." = '' then begin
+                        SeriesSetup.Get;
+                        SeriesSetup.TestField(SeriesSetup."Bill Determination");
+                        NoSeriesMgt.InitSeries(SeriesSetup."Bill Determination", xRec."No. Series", 0D, "Entry No.", "No. Series");
                     end;
                 end;
             end;
@@ -159,14 +210,25 @@
         {
             DataClassification = ToBeClassified;
         }
-        field(19;  "Task Date"; Date)
+        field(19; "Task Date"; Date)
         {
             DataClassification = ToBeClassified;
         }
         field(20; Department; Code[100])
         {
             DataClassification = ToBeClassified;
-           TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1));
+            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1));
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                Dimes: Record "Dimension Value";
+            begin
+                Dimes.Reset();
+                Dimes.SetRange(Code, rec.Department);
+                if Dimes.FindFirst() then
+                    rec."Department Name" := Dimes.Name;
+
+            end;
         }
         field(21; "Description/Subject"; Text[1500])
         {
@@ -188,11 +250,11 @@
         {
             DataClassification = ToBeClassified;
         }
-        field(26;  "Date Received";  Date)
+        field(26; "Date Received"; Date)
         {
             DataClassification = ToBeClassified;
         }
-        field(27;  "Incoming Date"; Date)
+        field(27; "Incoming Date"; Date)
         {
             DataClassification = ToBeClassified;
         }
@@ -200,17 +262,17 @@
         {
             DataClassification = ToBeClassified;
         }
-        field(29;"Receiver";Code[40])
+        field(29; "Receiver"; Code[40])
         {
-            DataClassification=ToBeClassified;
+            DataClassification = ToBeClassified;
             TableRelation = Employee;
 
             trigger OnValidate()
             begin
                 if Members.Get("Receiver") then begin
-                    rec."Receiver Code":=Members."No.";
+                    rec."Receiver Code" := Members."No.";
                     Rec.Receiver := Members."Search Name";
-                    rec."Reciever Mail":=Members."Company E-Mail";
+                    rec."Reciever Mail" := Members."Company E-Mail";
                 end;
 
             end;
@@ -219,19 +281,60 @@
         {
             DataClassification = ToBeClassified;
         }
-        field(31;  "Reciever Mail"; Text[100])
+        field(31; "Reciever Mail"; Text[100])
         {
             DataClassification = ToBeClassified;
         }
         field(32; "Receiver Code"; Code[40])
         {
             DataClassification = ToBeClassified;
+            TableRelation = Employee;
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                EmployeeC: Record Employee;
+            begin
+                EmployeeC.Reset();
+                EmployeeC.SetRange("No.", "Author Code");
+                if EmployeeC.FindFirst() then begin
+                    Rec.Receiver := Members."Search Name";
+                    rec."Reciever Mail" := Members."Company E-Mail";
+                end;
+
+            end;
         }
-        field(33;  "Author Code"; Code[40])
+        field(33; "Author Code"; Code[40])
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = Employee;
+            trigger OnValidate()
+            var
+                myInt: Integer;
+                EmployeeC: Record Employee;
+            begin
+                EmployeeC.Reset();
+                EmployeeC.SetRange("No.", "Author Code");
+                if EmployeeC.FindFirst() then begin
+                    Rec."Author" := EmployeeC."Search Name";
+                    Rec."Member Name" := EmployeeC."Search Name";
+                    rec."Author Email" := EmployeeC."Company E-Mail";
+                end;
+
+
+            end;
+        }
+        field(34; "Closed By"; Text[200])
         {
             DataClassification = ToBeClassified;
         }
- 
+        field(35; "Date Closed"; Date)
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(36; "Department Name"; Text[200])
+        {
+            DataClassification = ToBeClassified;
+        }
     }
     keys
     {
@@ -252,19 +355,55 @@
         UserSetup: Record "User Setup";
         SeriesSetup: Record "HR setup";
     begin
-        if rec."Document Type" = rec."Document Type"::Task then begin
+        if rec."Document Type" = rec."Document Type"::"Bill Costing" then begin
             if "Entry No." = '' then begin
                 SeriesSetup.Get;
-                SeriesSetup.TestField(SeriesSetup."File Entry No.");
-                NoSeriesMgt.InitSeries(SeriesSetup."File Entry No.", xRec."No. Series", 0D, "Entry No.", "No. Series");
+                SeriesSetup.TestField(SeriesSetup."Bill Costing");
+                NoSeriesMgt.InitSeries(SeriesSetup."Bill Costing", xRec."No. Series", 0D, "Entry No.", "No. Series");
             end;
         end;
-        if rec."Document Type" = rec."Document Type"::Mail then begin
+        if rec."Document Type" = rec."Document Type"::"Bill Determination" then begin
             if "Entry No." = '' then begin
                 SeriesSetup.Get;
-                SeriesSetup.TestField(SeriesSetup."Mail Entry No");
-                NoSeriesMgt.InitSeries(SeriesSetup."Mail Entry No", xRec."No. Series", 0D, "Entry No.", "No. Series");
+                SeriesSetup.TestField(SeriesSetup."Bill Determination");
+                NoSeriesMgt.InitSeries(SeriesSetup."Bill Determination", xRec."No. Series", 0D, "Entry No.", "No. Series");
             end;
+        end;
+        if rec."Document Type" = rec."Document Type"::"Incoming Correspondence" then begin
+            if "Entry No." = '' then begin
+                SeriesSetup.Get;
+                SeriesSetup.TestField(SeriesSetup."Incoming Correspondence");
+                NoSeriesMgt.InitSeries(SeriesSetup."Incoming Correspondence", xRec."No. Series", 0D, "Entry No.", "No. Series");
+            end;
+        end;
+        if rec."Document Type" = rec."Document Type"::"Incoming Memos" then begin
+            if "Entry No." = '' then begin
+                SeriesSetup.Get;
+                SeriesSetup.TestField(SeriesSetup."Incoming Memos");
+                NoSeriesMgt.InitSeries(SeriesSetup."Incoming Memos", xRec."No. Series", 0D, "Entry No.", "No. Series");
+            end;
+        end;
+        if rec."Document Type" = rec."Document Type"::"Outgoing Correspondence" then begin
+            if "Entry No." = '' then begin
+                SeriesSetup.Get;
+                SeriesSetup.TestField(SeriesSetup."Outgoing Correspondence");
+                NoSeriesMgt.InitSeries(SeriesSetup."Outgoing Correspondence", xRec."No. Series", 0D, "Entry No.", "No. Series");
+            end;
+        end;
+        if rec."Document Type" = rec."Document Type"::"Outgoing Memos" then begin
+            if "Entry No." = '' then begin
+                SeriesSetup.Get;
+                SeriesSetup.TestField(SeriesSetup."Outgoing Memos");
+                NoSeriesMgt.InitSeries(SeriesSetup."Outgoing Memos", xRec."No. Series", 0D, "Entry No.", "No. Series");
+            end;
+        end;
+        UserSetup.Reset();
+        UserSetup.SetRange("User ID", UserId);
+        IF UserSetup.FindFirst() then begin
+            rec."Author Code" := UserSetup."Staff No";
+            rec.Validate(rec."Author Code");
+            rec.Author := UserSetup."Staff No";
+            rec.Validate(Author);
         end;
     end;
 

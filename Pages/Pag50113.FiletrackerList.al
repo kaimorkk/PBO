@@ -1,4 +1,4 @@
- 
+
 
 page 50113 "Task Tracker List"
 {
@@ -22,16 +22,17 @@ page 50113 "Task Tracker List"
                 {
                     ApplicationArea = Basic, Suite;
                     Caption = 'Creation No.';
-                    Visible=false;
-                }
-                field("Document Type"; rec."Document Type")
-                {
-                    ApplicationArea = all;
+                    Visible = false;
                 }
                 field("File Number"; Rec."File Number")
                 {
                     ApplicationArea = Basic, Suite;
                 }
+                field("Document Type"; rec."Document Type")
+                {
+                    ApplicationArea = all;
+                }
+
                 field("Folio Number"; Rec."Folio Number")
                 {
                     ApplicationArea = Basic, Suite;

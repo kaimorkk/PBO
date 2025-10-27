@@ -51,15 +51,15 @@ page 50134 "HR Leave Application Card"
                 {
                     ApplicationArea = Basic;
                     Caption = 'No.';
-                    Editable = false;
+                    // Editable = false;
                     Importance = Promoted;
                     ToolTip = 'Specifies the value of the No. field.';
                 }
-                field(EmpName; EmpName)
+                field("Employee Name"; "Employee Name")
                 {
                     ApplicationArea = Basic;
                     Caption = 'Name';
-                    Editable = false;
+                    // Editable = false;
                     Importance = Promoted;
                     ToolTip = 'Specifies the value of the Name field.';
                 }
@@ -67,7 +67,7 @@ page 50134 "HR Leave Application Card"
                 {
                     ApplicationArea = Basic;
                     Caption = 'Job Title';
-                    Editable = false;
+                    // Editable = false;
                     Importance = Promoted;
                     ToolTip = 'Specifies the value of the Job Title field.';
                 }
@@ -75,7 +75,7 @@ page 50134 "HR Leave Application Card"
                 {
                     ApplicationArea = Basic;
                     Caption = 'Department';
-                    Editable = false;
+                    // Editable = false;
                     Visible = false;
                     ToolTip = 'Specifies the value of the Department field.';
                 }
@@ -88,7 +88,7 @@ page 50134 "HR Leave Application Card"
                 field("Responsibility Center"; Rec."Responsibility Center")
                 {
                     ApplicationArea = Basic;
-                    Editable = false;
+                    // Editable = false;
                     Caption = 'Department';
                     ShowMandatory = true;
                     ToolTip = 'Specifies the value of the Responsibility Center field.';
@@ -96,14 +96,14 @@ page 50134 "HR Leave Application Card"
                 field(Supervisor; Rec.Supervisor)
                 {
                     ApplicationArea = Basic;
-                    Editable = false;
-                    Visible = false;
+                    // Editable = false;
+                    // Visible = false;
                     ToolTip = 'Specifies the value of the Supervisor field.';
                 }
                 field("Supervisor Email"; Rec."Supervisor Email")
                 {
                     ApplicationArea = Basic;
-                    Editable = false;
+                    // Editable = false;
                     Visible = false;
                     ToolTip = 'Specifies the value of the Supervisor Email field.';
                 }
@@ -111,6 +111,7 @@ page 50134 "HR Leave Application Card"
                 {
                     ApplicationArea = Basic;
                     Caption = '*';
+                    Visible = false;
                 }
                 field("Leave Type"; Rec."Leave Type")
                 {
@@ -131,8 +132,17 @@ page 50134 "HR Leave Application Card"
                 field("Leave Plan"; "Leave Plan")
                 {
                     ApplicationArea = all;
+                    Visible = false;
                     Editable = IsAnnual;
                     ToolTip = 'Specifies the header plan Number for Annual Leaves';
+                }
+
+                field("Start Date"; Rec."Start Date")
+                {
+                    ApplicationArea = Basic;
+                    Importance = Promoted;
+                    ShowMandatory = true;
+                    ToolTip = 'Specifies the value of the Start Date field.';
                 }
                 field("Days Applied"; Rec."Days Applied")
                 {
@@ -164,13 +174,6 @@ page 50134 "HR Leave Application Card"
                         end;
                     end;
                 }
-                field("Start Date"; Rec."Start Date")
-                {
-                    ApplicationArea = Basic;
-                    Importance = Promoted;
-                    ShowMandatory = true;
-                    ToolTip = 'Specifies the value of the Start Date field.';
-                }
                 field("Return Date"; Rec."Return Date")
                 {
                     ApplicationArea = Basic;
@@ -181,12 +184,14 @@ page 50134 "HR Leave Application Card"
                 {
                     ApplicationArea = Basic;
                     Caption = '*';
+                    Visible = false;
                 }
                 field(dAlloc; dAlloc)
                 {
                     ApplicationArea = Basic;
                     Caption = 'Allocated days';
                     Editable = false;
+                    Visible = false;
                     ToolTip = 'Specifies the value of the Allocated days field.';
                 }
                 field(dEarnd; dEarnd)
@@ -194,6 +199,7 @@ page 50134 "HR Leave Application Card"
                     ApplicationArea = Basic;
                     Caption = 'Total Leave Days';
                     Editable = false;
+                    Visible = false;
                     Style = Strong;
                     StyleExpr = true;
                     ToolTip = 'Specifies the value of the Total Leave Days field.';
@@ -203,6 +209,7 @@ page 50134 "HR Leave Application Card"
                     ApplicationArea = Basic;
                     Caption = 'Total Leave Taken';
                     Editable = false;
+                    Visible = false;
                     Style = Strong;
                     StyleExpr = true;
                     ToolTip = 'Specifies the value of the Total Leave Taken field.';
@@ -214,12 +221,14 @@ page 50134 "HR Leave Application Card"
                     Editable = false;
                     Enabled = false;
                     Style = Strong;
+                    Visible = false;
                     StyleExpr = true;
                     ToolTip = 'Specifies the value of the Leave Balance field.';
                 }
                 label("*****")
                 {
                     ApplicationArea = Basic;
+                    Visible = false;
                     Caption = '*';
                 }
                 field(Posted; Rec.Posted)
@@ -273,10 +282,12 @@ page 50134 "HR Leave Application Card"
                 {
                     Caption = 'Leave Plan Ln';
                     ApplicationArea = all;
+                    Visible = false;
                 }
                 field(PlannerHeaderNum; PlannerHeaderNum)
                 {
                     ApplicationArea = all;
+                    Visible = false;
                     Caption = 'Planner Header No.';
                 }
             }
@@ -300,13 +311,15 @@ page 50134 "HR Leave Application Card"
                 field("Details of Examination"; Rec."Details of Examination")
                 {
                     ApplicationArea = Basic;
-                    Importance = Promoted;
+                    // Importance = Promoted;
+                    Visible = false;
                     ToolTip = 'Specifies the value of the Details of Examination field.';
                 }
                 field("Date of Exam"; Rec."Date of Exam")
                 {
                     ApplicationArea = Basic;
                     Importance = Promoted;
+                    Visible = false;
                     ToolTip = 'Specifies the value of the Date of Exam field.';
                 }
                 field("Applicant Comments"; Rec."Applicant Comments")
@@ -317,11 +330,13 @@ page 50134 "HR Leave Application Card"
                 field(Names; Rec.Names)
                 {
                     ApplicationArea = Basic;
+                    Visible = false;
                     ToolTip = 'Specifies the value of the Names field.';
                 }
                 field("Number of Previous Attempts"; Rec."Number of Previous Attempts")
                 {
                     ApplicationArea = Basic;
+                    Visible = false;
                     ToolTip = 'Specifies the value of the Number of Previous Attempts field.';
                 }
             }
@@ -529,11 +544,18 @@ page 50134 "HR Leave Application Card"
             }
         }
     }
+    trigger OnAfterGetCurrRecord()
+    var
+        myInt: Integer;
+    begin
+        // rec.CalcFields("Employee Name");
+    end;
 
     trigger OnAfterGetRecord()
     begin
         //Get Employee Details
         FillVariables();
+        // rec.CalcFields("Employee Name");
 
         //Get leave statistics
         Rec.GetLeaveStats(Rec."Leave Type");
@@ -560,6 +582,7 @@ page 50134 "HR Leave Application Card"
         //GetLeaveStats("Leave Type");
 
         Rec.GetLeaveStats(Rec."Leave Type");
+        // rec.CalcFields("Employee Name");
 
         /*
         //To make The OnLeave boolean field in Employee card False

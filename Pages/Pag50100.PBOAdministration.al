@@ -1,5 +1,6 @@
 namespace PBO.PBO;
 using System.Automation;
+using Microsoft.HumanResources.Employee;
 using System.Security.User;
 
 page 50100 "PBO Administration"
@@ -55,18 +56,18 @@ page 50100 "PBO Administration"
                     RunPageLink = "Meeting Status" = const(proceeding);
                     ToolTip = 'Executes the Proceeding List action.';
                 }
-                action("Successfull PBO Meetings")
+                action("Successful PBO Meetings")
                 {
                     ApplicationArea = Basic;
-                    Caption = 'Successfull PBO Meetings';
+                    Caption = 'Successful PBO Meetings';
                     RunObject = page "PBO Meeting List";
                     RunPageLink = "Meeting Status" = const(Successful);
                     ToolTip = 'Executes the Successfull PBO Meetings action.';
                 }
-                action("Failled PBO Meetings")
+                action("Failed PBO Meetings")
                 {
                     ApplicationArea = Basic;
-                    Caption = 'Failled PBO Meetings';
+                    Caption = 'Failed PBO Meetings';
                     RunObject = page "PBO Meeting List";
                     RunPageLink = "Meeting Status" = const(failled);
                     ToolTip = 'Executes the Failled PBO Meetings action.';
@@ -98,17 +99,18 @@ page 50100 "PBO Administration"
                         RunPageLink = "Task Status" = filter(Archived);
                     }
 
+
+                    action("Track Forwarded Task")
+                    {
+                        ApplicationArea = Basic, Suite;
+                        Caption = 'Track Forwarded Task';
+                        RunObject = page "Task Vlm Tracks";
+                    }
                     action("Task Locations")
                     {
                         ApplicationArea = Basic, Suite;
                         Caption = 'Task Locations';
                         RunObject = page "Task Locations List";
-                    }
-                    action("Batch Number List")
-                    {
-                        ApplicationArea = Basic, Suite;
-                        Caption = 'Batch No List';
-                        RunObject = page "Batch No List";
                     }
                 }
 
@@ -173,6 +175,7 @@ page 50100 "PBO Administration"
                 }
                 group("Task Batching & Archiving")
                 {
+                    Visible = false;
                     action("Batching & Archiving Process")
                     {
                         ApplicationArea = Basic, Suite;
@@ -228,6 +231,15 @@ page 50100 "PBO Administration"
                         ApplicationArea = Basic, Suite;
                         Caption = 'Task Stations';
                         RunObject = page "Task Stations";
+                    }
+                }
+                group("Register")
+                {
+                    action("Login Register")
+                    {
+                        ApplicationArea = all;
+                        RunObject = page "Login Register List";
+
                     }
                 }
             }
@@ -289,6 +301,18 @@ page 50100 "PBO Administration"
                     ApplicationArea = all;
                     RunObject = page "HR Leave Journal Lines";
                     Caption = 'Hr Leave Adjustment';
+                }
+                action("Leave Periods")
+                {
+                    ApplicationArea = all;
+                    RunObject = page "HR Leave Period List";
+                    Caption = 'Leave Periods';
+                }
+                action("All Employees")
+                {
+                    ApplicationArea = all;
+                    RunObject = page "Employee List";
+                    Caption = 'Employee List';
                 }
             }
             group(Setups)

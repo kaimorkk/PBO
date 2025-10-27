@@ -92,6 +92,36 @@ table 50101 "HR setup"
         {
             DataClassification = ToBeClassified;
         }
+        field(20; "Bill Determination"; code[30])
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = "No. Series";
+        }
+        field(21; "Bill Costing"; Code[30])
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = "No. Series";
+        }
+        field(22; "Incoming Correspondence"; Code[30])
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = "No. Series";
+        }
+        field(23; "Outgoing Correspondence"; Code[30])
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = "No. Series";
+        }
+        field(24; "Incoming Memos"; Code[30])
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = "No. Series";
+        }
+        field(25; "Outgoing Memos"; Code[30])
+        {
+            DataClassification = ToBeClassified;
+            TableRelation = "No. Series";
+        }
     }
     keys
     {
