@@ -194,7 +194,7 @@ codeunit 50109 "Hr Portal"
 
     end;
 
-    procedure SendAndNotifyReceiver(DocEntry: Code[40]): Text
+    procedure SendAndNotifyReceiver(DocEntry: Code[40])
     var
         myInt: Integer;
         AccName: Text;
@@ -266,12 +266,7 @@ codeunit 50109 "Hr Portal"
                 FileTabes.Feedback := '';
                 FileTabes.Modify();
             end;
-            Message('Email sent successfully');
         end;
-        // CurrPage.Close();
-        exit('Notified successfully');
-
-
     end;
 
     procedure ConfirmLogin(email: Text; Passcode: Code[40]) Status: Boolean;
