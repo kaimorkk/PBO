@@ -6,6 +6,8 @@ using Microsoft.Foundation.Attachment;
 using Microsoft.Foundation.Company;
 using System.Email;
 using Microsoft.Foundation.NoSeries;
+using System.Environment;
+using System;
 using Microsoft.HumanResources.Employee;
 using System.Text;
 
@@ -72,7 +74,103 @@ codeunit 50109 "Hr Portal"
         end;
     end;
 
-    procedure InsertMeeting(MeetingSummary: Text[700]; MeetingDate: Date; MeetingTime: Time; DepartmentCode: Code[100]; IsBrownBag: Boolean; DocumentComment: Text[500]): Code[40]
+    procedure UploadAttachedDocument(DocNo: Code[20]; FileName: Text[2000]; Attachment: BigText; TableID: Integer);
+    var
+        myInt: Integer;
+        DocAttachment: Record "Document Attachment";
+        FromRecRef: RecordRef;
+        FileManagement: Codeunit "File Management";
+        Bytes: dotnet Array;
+        // LegalH: Record "Legal Management";
+        Convert: dotnet Convert;
+        MemoryStream: dotnet MemoryStream;
+        Ostream: OutStream;
+        CurrPage: Page "Document Attachment Details";
+        tableFound: Boolean;
+        //  ICTReq: Record "ICT General Requisition Header";
+
+        //  Induction: Record "HR Induction Schedule";
+        //StaffInd: Record "HR Staff  Induction";
+        PboMeetings: Record "PBO Meetings";
+        meetingTask: Record "Meeting Task";
+        LeaveApplication: Record "HR Leave Application";
+    begin
+        tableFound := false;
+        if TableID = Database::"PBO Meetings" then begin
+            PboMeetings.Reset();
+            PboMeetings.SetRange(PboMeetings."Meeting Code", DocNo);
+            if PboMeetings.Find('-') then begin
+                FromRecRef.GETTABLE(PboMeetings);
+            end;
+            tableFound := true;
+        end;
+        if TableID = Database::"HR Leave Application" then begin
+            LeaveApplication.Reset();
+            LeaveApplication.SetRange(LeaveApplication."Application Code", DocNo);
+            if LeaveApplication.Find('-') then begin
+                FromRecRef.GETTABLE(LeaveApplication);
+            end;
+            tableFound := true;
+        end;
+        if TableID = Database::"Meeting Task" then begin
+            meetingTask.Reset();
+            meetingTask.SetRange(meetingTask."Commitee Code", DocNo);
+            if meetingTask.Find('-') then begin
+                FromRecRef.GETTABLE(meetingTask);
+            end;
+            tableFound := true;
+        end;
+        if tableFound = true then begin
+            if FileName <> '' then begin
+                Clear(DocAttachment);
+                DocAttachment.Init();
+                DocAttachment.Validate("File Extension", FileManagement.GetExtension(FileName));
+                DocAttachment.Validate("File Name", CopyStr(FileManagement.GetFileNameWithoutExtension(FileName), 1, MaxStrLen(FileName)));
+                DocAttachment.Validate("Table ID", FromRecRef.Number);
+                DocAttachment.Validate("No.", DocNo);
+                Bytes := Convert.FromBase64String(Attachment);
+                MemoryStream := MemoryStream.MemoryStream(Bytes);
+                DocAttachment."Document Reference ID".ImportStream(MemoryStream, '', FileName);
+                DocAttachment.Insert(true);
+                if FileManagement.DeleteServerFile(FileName) then;
+            end else
+                Error('No file to upload');
+        end else
+            Error('File not uploaded. No table filter found');
+
+    end;
+
+    procedure GetDocumentAttachment(tableId: Integer; No: Code[20]; RecID: Integer) BaseImage: Text
+    var
+        IStream: InStream;
+        Bytes: dotnet Array;
+        Convert: dotnet convert;
+        MemoryStream: dotnet MemoryStream;
+        TenantMedia: Record "Tenant Media";
+        imageID: GUID;
+        docAttachment: Record "Document Attachment";
+    begin
+        docAttachment.Reset();
+        docAttachment.SetRange("Table ID", tableId);
+        docAttachment.SetRange("No.", No);
+        docAttachment.SetRange(ID, RecID);
+        if docAttachment.find('-') then begin
+            if docAttachment."Document Reference ID".Hasvalue then begin
+                imageID := docAttachment."Document Reference ID".MediaId;
+                IF TenantMedia.GET(imageID) THEN BEGIN
+                    TenantMedia.CALCFIELDS(Content);
+                    TenantMedia.Content.CreateInstream(IStream);
+                    MemoryStream := MemoryStream.MemoryStream();
+                    CopyStream(MemoryStream, IStream);
+                    Bytes := MemoryStream.GetBuffer();
+                    BaseImage := Convert.ToBase64String(Bytes);
+                    exit(BaseImage);
+                END;
+            end;
+        end;
+    end;
+
+    procedure InsertMeeting(MeetingSummary: Text[700]; MeetingDate: Date; MeetingTime: Time; DepartmentCode: Code[100]; IsBrownBag: Boolean; DocumentComment: Text[500]; UserCode: Code[200]): Code[40]
     var
         PBOMeeting: Record "PBO Meetings";
         MembNoSeries: Record "HR setup";
@@ -91,6 +189,7 @@ codeunit 50109 "Hr Portal"
         PBOMeeting."Meeting Time" := MeetingTime;
         PBOMeeting."Meeting Status" := PBOMeeting."Meeting Status"::Open;
         PBOMeeting.Department := DepartmentCode;
+        PBOMeeting."Captured By" := UserCode;
         PBOMeeting.Validate(PBOMeeting.Department);
         PBOMeeting."Brown-Bag" := IsBrownBag;
         PBOMeeting."Document Comment" := DocumentComment;
@@ -117,6 +216,109 @@ codeunit 50109 "Hr Portal"
         LoginRegister."Login Time" := Time;
         LoginRegister.Insert(true);
         exit(LoginRegister."Entry No.");
+    end;
+
+    procedure RequestMeetingApproval(DocN: Code[30]): Boolean
+    var
+        myInt: Integer;
+        PboMeetings: Record "PBO Meetings";
+    begin
+        PboMeetings.Reset();
+        PboMeetings.SetRange("Meeting Code", DocN);
+        if PboMeetings.FindFirst() then begin
+            PboMeetings."Meeting Status" := PboMeetings."Meeting Status"::Pending;
+            PboMeetings.Modify();
+            exit(true);
+        end else
+            exit(false);
+
+    end;
+
+    procedure marklAsSuccessfull(DocN: Code[30]): Boolean
+    var
+        myInt: Integer;
+        PboMeetings: Record "PBO Meetings";
+    begin
+        PboMeetings.Reset();
+        PboMeetings.SetRange("Meeting Code", DocN);
+        if PboMeetings.FindFirst() then begin
+            PboMeetings."Meeting Status" := PboMeetings."Meeting Status"::proceeding;
+            PboMeetings.Modify();
+            exit(true);
+        end else
+            exit(false);
+
+    end;
+
+    procedure marketoproceed(DocN: Code[30]): Boolean
+    var
+        myInt: Integer;
+        PboMeetings: Record "PBO Meetings";
+    begin
+        PboMeetings.Reset();
+        PboMeetings.SetRange("Meeting Code", DocN);
+        if PboMeetings.FindFirst() then begin
+            PboMeetings."Meeting Status" := PboMeetings."Meeting Status"::proceeding;
+            PboMeetings.Modify();
+            exit(true);
+        end else
+            exit(false);
+
+    end;
+
+    procedure CancellMeeting(DocN: Code[30]): Boolean
+    var
+        myInt: Integer;
+        PboMeetings: Record "PBO Meetings";
+    begin
+        PboMeetings.Reset();
+        PboMeetings.SetRange("Meeting Code", DocN);
+        if PboMeetings.FindFirst() then begin
+            PboMeetings."Meeting Status" := PboMeetings."Meeting Status"::failled;
+            PboMeetings.Modify();
+            exit(true);
+        end else
+            exit(false);
+
+    end;
+
+    procedure DeleteLinesTask(MeetinCode: Code[40]; LineN: Integer)
+    var
+        myInt: Integer;
+        MeetingTask: Record "Meeting Task";
+    begin
+        MeetingTask.Reset();
+        MeetingTask.SetRange(MeetingTask."Commitee Code", MeetinCode);
+        MeetingTask.SetRange(MeetingTask."Entry No", LineN);
+        if MeetingTask.FindFirst() then
+            MeetingTask.Delete();
+
+    end;
+
+    procedure InsertTaskLines(EmployCode: Code[30]; Task: Text; MeetinCode: Code[40]): Boolean
+    var
+        myInt: Integer;
+        MeetingTask: Record "Meeting Task";
+    begin
+        MeetingTask.Reset();
+        if MeetingTask.FindLast() then begin
+            MeetingTask.Init();
+            MeetingTask."Commitee Code" := MeetinCode;
+            MeetingTask."Entry No" := MeetingTask."Entry No" + 1;
+            MeetingTask."Employee No" := EmployCode;
+            MeetingTask.Validate(MeetingTask."Employee No");
+            MeetingTask.Task := Task;
+            if MeetingTask.Insert() then
+                exit(true);
+        end else begin
+            MeetingTask."Commitee Code" := MeetinCode;
+            MeetingTask."Entry No" := 1;
+            MeetingTask."Employee No" := EmployCode;
+            MeetingTask.Validate(MeetingTask."Employee No");
+            MeetingTask.Task := Task;
+            MeetingTask.Insert();
+        end;
+
     end;
 
     procedure DeleteTaskFile(EntrCode: Code[30])
@@ -191,7 +393,7 @@ codeunit 50109 "Hr Portal"
         // TaskVolumes.Feedback := FileTabes.Feedback;
         TaskVolumes.Remarks := Remarks;
         if TaskVolumes.Insert() then
-            exit(DocNo);
+            exit(TaskVolumes."Entry No.");
 
     end;
 
@@ -290,7 +492,6 @@ codeunit 50109 "Hr Portal"
 
     end;
 
-<<<<<<< HEAD
     procedure CheckUserCanLogin(StaffN: Code[50]) Status: Boolean;
     var
         myInt: Integer;
@@ -312,9 +513,6 @@ codeunit 50109 "Hr Portal"
 
 
     procedure FnResetPassword(emailaddress: Text) passChangestatus: Text
-=======
-    procedure FnResetPassword(emailaddress: Text)
->>>>>>> 505ce4c991c4c2351fd3d8ad7f5ea2f495a72ed8
     var
         PortalUser: Record "portal User";
         RandomDigit: Text;
@@ -335,10 +533,10 @@ codeunit 50109 "Hr Portal"
             if PortalUser.Modify(true) then begin
                 SendEmail(emailaddress);
             end else begin
-                Error("Password not reset, Kindly try again!")
+                Error('Password not reset, Kindly try again!')
             end;
         end else begin
-            Error("Email Address is Missing1")
+            Error('Email Address is Missing1')
         end;
     end;
 
@@ -367,7 +565,7 @@ codeunit 50109 "Hr Portal"
             PortalUSer."Password Value" := RandomDigit;
             PortalUSer."Last Modified Date" := Today;
             if not PortalUSer.Insert(true) then begin
-                Error("Account creation not successfull, Kindly contact ICT!")
+                Error('Account creation not successfull, Kindly contact ICT!')
             end;
         end;
 

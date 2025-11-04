@@ -1,5 +1,7 @@
 namespace PBO.PBO;
 using Microsoft.Foundation.Company;
+using Microsoft.FixedAssets.Depreciation;
+using System.Environment.Configuration;
 using System.Email;
 using Microsoft.HumanResources.Employee;
 using Microsoft.Foundation.Attachment;
@@ -210,6 +212,7 @@ page 50102 "PBO Meeting Card"
                     trigger OnAction()
                     var
                         myInt: Integer;
+                        cALCdEP: Report "Calculate Depreciation";
                     begin
                         if not Confirm('Do you want to Close and mark this meeting as failled?') then
                             exit;
@@ -253,6 +256,22 @@ page 50102 "PBO Meeting Card"
                         DocumentAttachmentDetails.RunModal();
                     end;
                 }
+                action(CreateTask)
+                {
+                    ApplicationArea = all;
+                    Promoted = true;
+                    PromotedCategory = Category5;
+                    PromotedIsBig = true;
+                    Visible = false;
+                    trigger OnAction()
+                    var
+                        myInt: Integer;
+                        Hrportal: Codeunit "Hr Portal";
+                    begin
+                        Hrportal.CreatFilesTask('EH', '4342', Today, 'ADM', 'EH', 'TRES', '43R3EW', 2);
+
+                    end;
+                }
             }
         }
     }
@@ -262,12 +281,13 @@ page 50102 "PBO Meeting Card"
         AccName: Text;
         CompanIn: Record "Company Information";
         msg: Text;
-        Emailmessage: Codeunit "Email Message";
+        EmailManager: Codeunit "Email Message";
         EmailTable: Record "Email Account";
         HRDiscipMemb: Record "Committee Cub Members";
         Employee: Record Employee;
-        EmailManager: Codeunit "Email Message";
         Email: Codeunit Email;
+        aad: Record "AAD Application";
+        AadP: Page "AAD Application Card";
 
     begin
         HRDiscipMemb.Reset();

@@ -1,4 +1,4 @@
- 
+
 table 50102 "Meeting Task"
 {
     Caption = 'Meetings Task';
@@ -18,7 +18,7 @@ table 50102 "Meeting Task"
             Caption = 'Employee No.';
             trigger OnValidate()
             var
-                 
+
             begin
                 Board.Reset();
                 Board.SetRange("No.", rec."Employee No");
@@ -50,10 +50,22 @@ table 50102 "Meeting Task"
         {
             Caption = 'Phone Number';
         }
+        field(12; "Entry No"; Integer)
+        {
+            DataClassification = ToBeClassified;
+            AutoIncrement = true;
+        }
+    }
+    keys
+    {
+        key(PK; "Commitee Code", "Entry No")
+        {
+            Clustered = true;
+        }
     }
 
     fieldgroups { }
-    
+
 
     var
         Board: Record Employee;
