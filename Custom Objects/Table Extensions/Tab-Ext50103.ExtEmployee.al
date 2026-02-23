@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 using Microsoft.HumanResources.Employee;
 
-tableextension 50103 "Ext Employee" extends Employee
+tableextension 52186449 "Ext Employee" extends Employee
 {
     fields
     {
@@ -104,6 +104,14 @@ tableextension 50103 "Ext Employee" extends Employee
             DecimalPlaces = 2 : 2;
             Editable = false;
             Caption = 'Total (Leave Days)';
+        }
+        field(3001; "OTP Code"; Code[50])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(3002; "OTP Code Expiration"; DateTime)
+        {
+            DataClassification = ToBeClassified;
         }
     }
 }

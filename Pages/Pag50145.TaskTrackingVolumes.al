@@ -1,7 +1,7 @@
 namespace PBO.PBO;
 using Microsoft.Foundation.Attachment;
 
-page 50145 "Task Track VolumesCrd"
+page 52186442 "Task Track VolumesCrd"
 {
     ApplicationArea = All;
     Caption = 'Task Volume Tracking';
@@ -51,7 +51,7 @@ page 50145 "Task Track VolumesCrd"
                 //     ToolTip = 'Specifies the value of the File Sub Type field.';
                 // }
 
-                field("Author"; Rec."Author")
+                field("Author Code"; "Author Code")
                 {
                     ToolTip = 'Specifies the value of the File/Member No. field.';
                     Caption = 'Author';
@@ -101,9 +101,10 @@ page 50145 "Task Track VolumesCrd"
                 {
                     ApplicationArea = all;
                 }
-                field(Receiver; Receiver)
+                field("Receiver Code"; "Receiver Code")
                 {
                     ApplicationArea = all;
+                    Caption = 'Receiver';
                 }
                 field("Reciever Mail"; "Reciever Mail")
                 {
@@ -125,6 +126,12 @@ page 50145 "Task Track VolumesCrd"
                     ApplicationArea = all;
                     MultiLine = true;
                 }
+                field("Volume Entry No."; "Volume Entry No.")
+                {
+                    ApplicationArea = all;
+
+                }
+
 
             }
         }
@@ -151,7 +158,7 @@ page 50145 "Task Track VolumesCrd"
                 // EmployeeRec: Record "HR Employee Requisitions";
                 begin
                     filetable.Reset();
-                    filetable.SetRange("Entry No.", rec."File No.");
+                    filetable.SetRange("Entry No.", rec."Volume Entry No.");
                     if filetable.FindFirst() then begin
                         RecRef.GetTable(filetable);
                         DocumentAttachmentDetails.OpenForRecRef(RecRef);

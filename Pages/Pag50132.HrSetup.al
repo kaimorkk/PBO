@@ -1,6 +1,6 @@
 namespace PBO.PBO;
 
-page 50132 "Hr Setup"
+page 52186435 "Hr Setup"
 {
     ApplicationArea = All;
     Caption = 'Hr Setup';
@@ -85,6 +85,34 @@ page 50132 "Hr Setup"
                     ApplicationArea = all;
                 }
                 field("Incoming Memos"; "Incoming Memos")
+                {
+                    ApplicationArea = all;
+                }
+                field("Allow Send Sms"; "Allow Send Sms")
+                {
+                    ApplicationArea = all;
+                }
+                field("Notify Vie Mail"; "Notify Vie Mail")
+                {
+                    ApplicationArea = all;
+                }
+                field(ApiKey; ApiKey)
+                {
+                    ApplicationArea = all;
+                }
+                field("Sms Api"; "Sms Api")
+                {
+                    ApplicationArea = all;
+                }
+                field("Sms SenderID"; "Sms SenderID")
+                {
+                    ApplicationArea = all;
+                }
+                field("Sms ClientId"; "Sms ClientId")
+                {
+                    ApplicationArea = all;
+                }
+                field("OTP Timeout"; "OTP Timeout")
                 {
                     ApplicationArea = all;
                 }

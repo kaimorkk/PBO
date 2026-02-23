@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 using Microsoft.Foundation.Attachment;
 
-pageextension 50101 """Document Attachment Ext """ extends "Document Attachment Details"
+pageextension 52186446 """Document Attachment Ext """ extends "Document Attachment Details"
 {
     layout
     {

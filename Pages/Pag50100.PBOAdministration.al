@@ -3,7 +3,7 @@ using System.Automation;
 using Microsoft.HumanResources.Employee;
 using System.Security.User;
 
-page 50100 "PBO Administration"
+page 52186425 "PBO Administration"
 {
     ApplicationArea = All;
     Caption = 'PBO Administration';
@@ -340,6 +340,12 @@ page 50100 "PBO Administration"
                     ApplicationArea = all;
                     Caption = 'Workflow';
                     RunObject = page Workflow;
+                }
+                action("Sms messages")
+                {
+                    ApplicationArea = all;
+                    RunObject = page "SMS Messages";
+                    Caption = 'Sms Messages';
                 }
             }
         }

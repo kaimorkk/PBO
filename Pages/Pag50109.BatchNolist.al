@@ -1,5 +1,5 @@
 namespace PBO.PBO;
-page 50109 "Batch No List"
+page 52186430 "Batch No List"
 {
     ApplicationArea = All;
     Caption = 'Batch No List';

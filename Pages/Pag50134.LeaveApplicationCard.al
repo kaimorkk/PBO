@@ -6,7 +6,7 @@ using System.Utilities;
 using System.Automation;
 
 
-page 50134 "HR Leave Application Card"
+page 52186437 "HR Leave Application Card"
 {
     DeleteAllowed = false;
     PageType = Card;

@@ -4,7 +4,7 @@ using Microsoft.Foundation.Company;
 using System.Email;
 
 
-page 50103 "Meeting task"
+page 52186427 "Meeting task"
 {
     ApplicationArea = All;
     Caption = 'Meeting Task';

@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 using System.Security.User;
 
-pageextension 50100 "Extends User setup" extends "User Setup"
+pageextension 52186445 "Extends User setup" extends "User Setup"
 {
     layout
     {
@@ -26,6 +26,10 @@ pageextension 50100 "Extends User setup" extends "User Setup"
                 ApplicationArea = all;
             }
             field("Can Login"; "Can Login")
+            {
+                ApplicationArea = all;
+            }
+            field(HOD; HOD)
             {
                 ApplicationArea = all;
             }

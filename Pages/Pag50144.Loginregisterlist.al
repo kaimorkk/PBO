@@ -1,13 +1,13 @@
 namespace PBO.PBO;
 
 
-page 50144 "Login Register List"
+page 52186441 "Login Register List"
 {
     PageType = List;
     ApplicationArea = All;
     UsageCategory = Lists;
     SourceTable = "Login Register";
-    Caption = 'Login Register';
+    Caption = 'Task Register';
     // CardPageId = "Login Register Card";
     Editable = true;
 
@@ -20,6 +20,7 @@ page 50144 "Login Register List"
                 field("Entry No."; Rec."Entry No.")
                 {
                     ApplicationArea = All;
+                    Visible = false;
                     ToolTip = 'Specifies the entry number.';
                 }
                 field("User ID"; Rec."User ID")
@@ -37,22 +38,21 @@ page 50144 "Login Register List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the login time.';
                 }
-                field("Logout Time"; Rec."Logout Time")
+                field(Location; Location)
                 {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the logout time.';
+                    ApplicationArea = all;
                 }
-                field("Duration (Hours)"; Rec."Duration (Hours)")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the duration in hours.';
-                    Style = Strong;
-                }
+
                 field("Work Summary"; Rec."Work Summary")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the work summary for the day.';
                     Width = 50;
+                }
+                field("Login Type"; "Login Type")
+                {
+                    ApplicationArea = all;
+                    Visible = false;
                 }
             }
         }

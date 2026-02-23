@@ -1,7 +1,7 @@
 namespace PBO.PBO;
 
 
-enum 50100 "File Types"
+enum 52185425 "File Types"
 {
     Extensible = true;
     value(0; "")

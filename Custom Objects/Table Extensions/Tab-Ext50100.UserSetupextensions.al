@@ -5,7 +5,7 @@ using Microsoft.Finance.Dimension;
 using Microsoft.Inventory.Location;
 using Microsoft.HumanResources.Employee;
 
-tableextension 50100 "User Setup extensions" extends "User Setup"
+tableextension 52186447 "User Setup extensions" extends "User Setup"
 {
     fields
     {
@@ -48,6 +48,10 @@ tableextension 50100 "User Setup extensions" extends "User Setup"
             end;
         }
         field(7000; "Can Login"; Boolean)
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(7002; "HOD"; Boolean)
         {
             DataClassification = ToBeClassified;
         }

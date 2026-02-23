@@ -8,7 +8,7 @@ using Microsoft.Foundation.Attachment;
 
 
 
-page 50102 "PBO Meeting Card"
+page 52186426 "PBO Meeting Card"
 {
     ApplicationArea = All;
     Caption = 'Meeting Card';
@@ -262,14 +262,28 @@ page 50102 "PBO Meeting Card"
                     Promoted = true;
                     PromotedCategory = Category5;
                     PromotedIsBig = true;
-                    Visible = false;
+                    // Visible = false;
                     trigger OnAction()
                     var
                         myInt: Integer;
                         Hrportal: Codeunit "Hr Portal";
+                        meesg: Enum "Message Type";
+                        Name: Text;
+                        "PV Type": Text;
+                        "Payment Type": Text;
                     begin
-                        Hrportal.CreatFilesTask('EH', '4342', Today, 'ADM', 'EH', 'TRES', '43R3EW', 2);
-
+                        Hrportal.GetPublicIPAddress();
+                        // Name := 'kkaimor\sharks.kk';
+                        // Name := COPYSTR(Name, STRPOS(Name, '\') + 1, STRLEN(Name));
+                        // MESSAGE(Name);
+                        // "PV Type" := 'oops';
+                        // "Payment Type" := 'Surrender';
+                        // if ("PV Type" <> 'tax') and ("Payment Type" <> 'Surrender') then
+                        //     Error('HQ Payment %1 cannot be posted without Exchequer funding. Please add it to an Exchequer Request and get it approved first.');
+                        //Hrportal.CreatePortalUser('PBOBCS1\BENJAMIN.NGIMOR', 'MT0001');
+                        //Hrportal.SendPboComSMS('0721744684', 'Test321', '5473', meesg::"Meeting Notification");
+                        // Hrportal.CreatFilesTask('EH', '4342', Today, 'ADM', 'EH', 'TRES', '43R3EW', 2);
+                        Message('Done');
                     end;
                 }
             }
@@ -288,8 +302,13 @@ page 50102 "PBO Meeting Card"
         Email: Codeunit Email;
         aad: Record "AAD Application";
         AadP: Page "AAD Application Card";
+        GenSetUp: Record "HR setup";
+        SureFactory: Codeunit "Hr Portal";
+        MessageTY: Enum "Message Type";
 
     begin
+        MessageTY := MessageTY::"Meeting Notification";
+        GenSetUp.Get();
         HRDiscipMemb.Reset();
         HRDiscipMemb.SetRange(HRDiscipMemb."Commitee Code", Rec."Meeting Code");
         if HRDiscipMemb.FindFirst() then
@@ -300,9 +319,18 @@ page 50102 "PBO Meeting Card"
                     AccName := Employee."First Name";
                     if AccName = '' then
                         AccName := Employee."Middle Name";
-                    msg := 'Dear ' + AccName + ', you have  been Selected to be a Executive Commitee Of meeting no. ' + ' ' + Rec."Meeting Code" + ' ' + 'and the meeting date is ' + Format(rec."Meeting Date") + ' ' + 'Kindly for Further Information Contact the Head department. Thank you.';
-                    EmailManager.Create(HRDiscipMemb.Email, 'Commitee Notifications', msg, true);
-                    Email.Send(EmailManager, Enum::"Email Scenario"::Default);
+                    if GenSetUp."Allow Send SMS" then begin
+                        if Employee."Phone No." <> '' then begin //Check if the mobile phone No is not blank but dont return an error
+                            msg := 'Dear ' + AccName + ', you have  been Selected to be a Executive Commitee Of meeting no. ' + ' ' + Rec."Meeting Code" + ' ' + 'and the meeting date is ' + Format(rec."Meeting Date") + ' ' + 'Kindly for Further Information Contact the Head department. Thank you.';
+                            SureFactory.SendPboComSMS(Employee."Phone No.", msg, Employee."No.", MessageTY);
+                        end;
+                    end;
+                    if GenSetUp."Notify Vie Mail" then begin
+
+                        msg := 'Dear ' + AccName + ', you have  been Selected to be a Executive Commitee Of meeting no. ' + ' ' + Rec."Meeting Code" + ' ' + 'and the meeting date is ' + Format(rec."Meeting Date") + ' ' + 'Kindly for Further Information Contact the Head department. Thank you.';
+                        EmailManager.Create(HRDiscipMemb.Email, 'Commitee Notifications', msg, true);
+                        Email.Send(EmailManager, Enum::"Email Scenario"::Default);
+                    end;
                 end;
             until HRDiscipMemb.Next() = 0;
         Message('Email sent successfully');

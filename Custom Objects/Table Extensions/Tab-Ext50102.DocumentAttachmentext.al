@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 using Microsoft.Foundation.Attachment;
 
-tableextension 50102 "Document Attachment ext" extends "Document Attachment"
+tableextension 52186450 "Document Attachment ext" extends "Document Attachment"
 {
     fields
     {
