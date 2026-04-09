@@ -4,6 +4,7 @@ using System.Security.User;
 using System.IO;
 using System.Automation;
 using Microsoft.Foundation.Attachment;
+using Microsoft.Service.Document;
 using Microsoft.Foundation.Company;
 using System.Email;
 using Microsoft.Foundation.NoSeries;
@@ -384,7 +385,10 @@ codeunit 52186451 "Hr Portal"
     var
         LoginRegister: Record "Login Register";
         entryNo: Integer;
+        NameX: Text;
     begin
+        NameX := '';
+        NameX := COPYSTR(UserID, STRPOS(UserID, '\') + 1, STRLEN(UserID));
         LoginRegister.Reset();
         if LoginRegister.FindLast() then
             entryNo := LoginRegister."Entry No." + 1
@@ -411,7 +415,10 @@ codeunit 52186451 "Hr Portal"
     var
         LoginRegister: Record "Login Register";
         entryNo: Integer;
+        NameX: Text;
     begin
+        NameX := '';
+        NameX := COPYSTR(UserID, STRPOS(UserID, '\') + 1, STRLEN(UserID));
         LoginRegister.Reset();
         if LoginRegister.FindLast() then
             entryNo := LoginRegister."Entry No." + 1
@@ -434,8 +441,10 @@ codeunit 52186451 "Hr Portal"
     var
         LoginRegister: Record "Login Register";
         entryNo: Integer;
+        NameX: Text;
     begin
-
+        NameX := '';
+        NameX := COPYSTR(UserID, STRPOS(UserID, '\') + 1, STRLEN(UserID));
         LoginRegister.Reset();
         LoginRegister.SetRange("Entry No.", DocN);
         if LoginRegister.FindFirst() then begin
@@ -470,7 +479,7 @@ codeunit 52186451 "Hr Portal"
 
     end;
 
-    procedure marklAsSuccessfull(DocN: Code[30]): Boolean
+    procedure markAsSuccessful(DocN: Code[30]): Boolean
     var
         myInt: Integer;
         PboMeetings: Record "PBO Meetings";
@@ -559,13 +568,15 @@ codeunit 52186451 "Hr Portal"
     var
         HRLeave: Record "HR Leave Application";
         HREmp: Record Employee;
+        NameX: Text;
         Text005: Label 'You have a Leave Application of type %1 - %2 that is still Pending. Kindly Cancel it or wait for Approval.';
     begin
 
         begin
-
+            NameX := '';
+            NameX := COPYSTR(UserID, STRPOS(UserID, '\') + 1, STRLEN(UserID));
+            UserID := NameX;
             HRLeave.Reset();
-
             HRLeave.SetRange(HRLeave."Employee No", EmployeeNo);
             //  HRLeave.SETRANGE(HRLeave."Leave Type", LeaveType);
             HRLeave.SetFilter(HRLeave.Status, '%1|%2', HRLeave.Status::New, HRLeave.Status::"Pending Approval");
@@ -1088,7 +1099,7 @@ codeunit 52186451 "Hr Portal"
 
     end;
 
-    procedure SendAndNotifyReceiver(DocNUm: Code[40]) Status: Boolean;
+    procedure SendAndNotifyReceiver(DocNUm: Code[40]; ReceiverCode: Code[20]) Status: Boolean;
     var
         myInt: Integer;
         AccName: Text;
@@ -1116,7 +1127,7 @@ codeunit 52186451 "Hr Portal"
         HRDiscipMemb.SetRange(HRDiscipMemb.DocNO, DocNUm);
         if HRDiscipMemb.FindFirst() then begin
             repeat
-                if Employee.Get(HRDiscipMemb."Receiver Code") then begin
+                if Employee.Get(ReceiverCode) then begin
                     AccName := '';
                     CompanIn.Get();
                     AccName := Employee."First Name";
@@ -1150,8 +1161,8 @@ codeunit 52186451 "Hr Portal"
             SeriesSetup.TestField(SeriesSetup."Volume Entry No.");
             DocNoE := NoSeriesMgt.GetNextNo(SeriesSetup."Volume Entry No.", 0D, True);
             TaskVolumes."File No." := FileTabes.DocNO;
-            TaskVolumes."Volume Entry No." := FileTabes."Entry No.";
-            TaskVolumes."Author Code" := FileTabes.Author;
+            TaskVolumes."Volume Entry No." := DocNoE;
+            TaskVolumes."Author Code" := ReceiverCode;
             TaskVolumes.Validate(TaskVolumes."Author Code");
             TaskVolumes."Date Received" := Today;
             TaskVolumes."File Type" := FileTabes."File Type";
@@ -1159,15 +1170,16 @@ codeunit 52186451 "Hr Portal"
             TaskVolumes."Incoming Date" := FileTabes."Incoming Date";
             TaskVolumes.Reference := FileTabes.Reference;
             TaskVolumes."Task Date" := FileTabes."Task Date";
-            TaskVolumes."Receiver Code" := FileTabes."Receiver Code";
-            TaskVolumes.Validate(TaskVolumes."Receiver Code");
+            TaskVolumes."Receiver Code" := '';
+            //TaskVolumes.Validate(TaskVolumes."Receiver Code");
             TaskVolumes.Department := FileTabes.Department;
             TaskVolumes.Validate(TaskVolumes.Department);
             TaskVolumes.Action := FileTabes.Action;
             TaskVolumes."Task Status" := FileTabes."Task Status"::Forwared;
             TaskVolumes.Remarks := FileTabes.Remarks;
-            if TaskVolumes.Insert() then begin
-                FileTabes."Author Code" := FileTabes."Receiver Code";
+            TaskVolumes.Insert();
+            if DocNoE <> '' then begin
+                FileTabes."Author Code" := ReceiverCode;
                 FileTabes.Validate(FileTabes."Author Code");
                 FileTabes."Reciever Mail" := '';
                 FileTabes.Receiver := '';
@@ -1184,7 +1196,10 @@ codeunit 52186451 "Hr Portal"
     var
         myInt: Integer;
         PortalUser: Record "portal User";
+        NameX: Text;
     begin
+        NameX := '';
+        NameX := COPYSTR(UserName, STRPOS(UserName, '\') + 1, STRLEN(UserName));
         Status := false;
         PortalUser.Reset();
         PortalUser.SetRange(PortalUser."User Name", USERNAME);
@@ -1223,14 +1238,19 @@ codeunit 52186451 "Hr Portal"
         PortalUser: Record "portal User";
         RandomDigit: Text;
         Body: Text;
+        NameX: Text;
+        UserSet: Record "User Setup";
+        employee: Record Employee;
 
     begin
-        PortalUser.Reset;
+        NameX := '';
+        NameX := COPYSTR(UserName, STRPOS(UserName, '\') + 1, STRLEN(UserName));
+
+        PortalUser.Reset();
         PortalUser.SetRange(PortalUser."User Name", USERNAME);
-        if PortalUser.FindSet then begin
-            // RandomDigit := CreateGuid;
-            // RandomDigit := DelChr(RandomDigit, '=', '{}-01');
-            // RandomDigit := CopyStr(RandomDigit, 1, 8);
+        if PortalUser.FindFirst() then begin
+            PortalUSer."User Name" := UpperCase(USERNAME);
+            PortalUSer."Full Name" := UpperCase(USERNAME);
             PortalUser."Password Value" := Passw;
             PortalUser."Last Modified Date" := Today;
             PortalUser."Change Password" := false;
@@ -1242,8 +1262,68 @@ codeunit 52186451 "Hr Portal"
                 Error('Password not reset, Kindly try again!')
             end;
         end else begin
-            Error('User name is Missing')
+            PortalUSer.Init;
+            PortalUSer."User Name" := UpperCase(USERNAME);
+            PortalUSer."Full Name" := UpperCase(USERNAME);
+            employee.Reset();
+            employee.SetRange("No.", NameX);
+            if employee.FindFirst() then
+                PortalUSer."Authentication Email" := employee."Company E-Mail";
+            PortalUSer.State := PortalUSer.State::Enabled;
+            PortalUSer."Record Type" := PortalUSer."record type"::"Job Applicant";
+            // RandomDigit := CreateGuid;
+            // RandomDigit := DelChr(RandomDigit, '=', '{}-01');
+            // RandomDigit := CopyStr(RandomDigit, 1, 8);
+            PortalUSer."Password Value" := Passw;
+            PortalUSer."Last Modified Date" := Today;
+            if not PortalUSer.Insert(true) then begin
+                Error('Account creation not successfull, Kindly contact ICT!')
+            end else begin
+                passChangestatus := 'password changed';
+                exit(passChangestatus);
+            end;
         end;
+        // end else begin
+        //     UserSet.Reset();
+        //     UserSet.SetRange("User ID", USERNAME);
+        //     if UserSet.FindFirst() then begin
+        //         PortalUser.Reset();
+        //         PortalUser.SetRange(PortalUser."User Name", USERNAME);
+        //         if PortalUser.FindFirst() then begin
+        //             // RandomDigit := CreateGuid;
+        //             // RandomDigit := DelChr(RandomDigit, '=', '{}-01');
+        //             // RandomDigit := CopyStr(RandomDigit, 1, 8);
+        //             PortalUser."Password Value" := Passw;
+        //             PortalUser."Last Modified Date" := Today;
+        //             PortalUser."Change Password" := false;
+        //             PortalUser."Record Type" := PortalUser."record type"::"Job Applicant";
+        //             if PortalUser.Modify(true) then begin
+        //                 passChangestatus := 'password changed';
+        //                 exit(passChangestatus);
+        //             end else begin
+        //                 Error('Password not reset, Kindly try again!')
+        //             end;
+        //         end else begin
+        //             PortalUSer.Init;
+        //             PortalUSer."User Name" := USERNAME;
+        //             PortalUSer."Full Name" := USERNAME;
+        //             employee.Reset();
+        //             employee.SetRange("No.", NameX);
+        //             if employee.FindFirst() then
+        //                 PortalUSer."Authentication Email" := employee."Company E-Mail";
+        //             PortalUSer.State := PortalUSer.State::Enabled;
+        //             PortalUSer."Record Type" := PortalUSer."record type"::"Job Applicant";
+        //             PortalUSer."Password Value" := Passw;
+        //             PortalUSer."Last Modified Date" := Today;
+        //             if not PortalUSer.Insert(true) then begin
+        //                 Error('Account creation not successfull, Kindly contact ICT!')
+        //             end else begin
+        //                 passChangestatus := 'password changed';
+        //                 exit(passChangestatus);
+        //             end;
+        //         end;
+        //     end
+        //end;
     end;
 
     procedure GeneratePortalEmailOTPCode(UserName: Text)
@@ -1251,6 +1331,7 @@ codeunit 52186451 "Hr Portal"
         otp: Text;
         HrSetup: Record "HR setup";
         HrEmp: Record Employee;
+        service: Record "Service Document Log";
         UserSet: Record "User Setup";
         NameX: Text;
         GenSetUp: Record "HR setup";
@@ -1261,28 +1342,62 @@ codeunit 52186451 "Hr Portal"
         MessageTY := MessageTY::Other;
 
         NameX := '';
+        // Error('weeeee is Missing');
+        NameX := COPYSTR(UserName, STRPOS(UserName, '\') + 1, STRLEN(UserName));
         UserSet.Reset();
-        UserSet.SetRange("User ID", UserName);
+        UserSet.SetRange("User ID", NameX);
         if UserSet.FindFirst() then begin
-            if UserSet."User ID" <> '' then
-                NameX := COPYSTR(UserSet."User ID", STRPOS(UserSet."User ID", '\') + 1, STRLEN(UserSet."User ID"));
+            //Error('user not found %1', NameX);
             HrSetup.Get();
             HrEmp.Reset();
             HrEmp.Setrange(HrEmp."No.", NameX);
             if HrEmp.find('-') then begin
+                //Error('Employee not found %1', NameX);
                 otp := GenerateRandomOTPCode(5);
                 HrEmp."OTP Code" := otp;
                 HrEmp."OTP Code Expiration" := CurrentDateTime + HrSetup."OTP Timeout";
-                HrEmp.modify(false);
-                if HREmp."Company E-mail" <> '' then
-                    SendEmail(HREmp."Company E-Mail", 'Login OTP', 'Your Login OTP is ' + otp);
+                HrEmp.modify();
                 GenSetUp.get();
+                if HREmp."Company E-mail" <> '' then
+                    if GenSetUp."Notify Vie Mail" then
+                        if GenSetUp."Notify Vie Mail" then
+                            SendEmail(HREmp."Company E-Mail", 'Login OTP', 'Your Login OTP is ' + otp);
+                // GenSetUp.get();
                 if GenSetUp."Allow Send SMS" then begin
                     if HREmp."Phone No." <> '' then begin
                         msg := 'Dear ' + HrEmp."First Name" + ',Login OTP Your Login OTP is ' + otp;
+                        // Error('Number %1', HREmp."Phone No.");
                         SureFactory.SendPboComSMS(HREmp."Phone No.", msg, HREmp."No.", MessageTY);
                     end;
                 end;
+            end;
+        end else begin
+            UserSet.Reset();
+            UserSet.SetRange("User ID", UserName);
+            if UserSet.FindFirst() then begin
+
+                HrSetup.Get();
+                HrEmp.Reset();
+                HrEmp.Setrange(HrEmp."No.", UserName);
+                if HrEmp.find('-') then begin
+
+                    otp := GenerateRandomOTPCode(5);
+                    HrEmp."OTP Code" := otp;
+                    HrEmp."OTP Code Expiration" := CurrentDateTime + HrSetup."OTP Timeout";
+                    HrEmp.modify;
+
+                    if HREmp."Company E-mail" <> '' then
+                        SendEmail(HREmp."Company E-Mail", 'Login OTP', 'Your Login OTP is ' + otp);
+                    GenSetUp.get();
+                    if GenSetUp."Allow Send SMS" then begin
+                        if HREmp."Phone No." <> '' then begin
+                            msg := 'Dear ' + HrEmp."First Name" + ',Login OTP Your Login OTP is ' + otp;
+                            //Error('2 Number %1', HREmp."Phone No.");
+                            SureFactory.SendPboComSMS(HREmp."Phone No.", msg, HREmp."No.", MessageTY);
+                        end;
+                    end;
+                end else
+                    Error('2nd employee not found %1', UserName);
             end;
         end;
     end;
@@ -1323,11 +1438,14 @@ codeunit 52186451 "Hr Portal"
         HrEmp: Record Employee;
         UserSetup: Record "User Setup";
         EmpNo: Text;
+        NameX: Text;
     begin
         Success := false;
+        NameX := '';
+        NameX := COPYSTR(UserName, STRPOS(UserName, '\') + 1, STRLEN(UserName));
         EmpNo := '';
         UserSetup.Reset();
-        UserSetup.SetRange("User ID", UserName);
+        UserSetup.SetRange("User ID", NameX);
         if UserSetup.FindFirst() then begin
             if UserSetup."User ID" <> '' then
                 EmpNo := COPYSTR(UserSetup."User ID", STRPOS(UserSetup."User ID", '\') + 1, STRLEN(UserSetup."User ID"));
@@ -1337,9 +1455,21 @@ codeunit 52186451 "Hr Portal"
             if HrEmp.find('-') then
                 if CurrentDateTime < HrEmp."OTP Code Expiration" then
                     Success := true;
-        end
-        else
-            Success := false;
+        end else begin
+            UserSetup.Reset();
+            UserSetup.SetRange("User ID", UserName);
+            if UserSetup.FindFirst() then begin
+                // if UserSetup."User ID" <> '' then
+                //     EmpNo := COPYSTR(UserSetup."User ID", STRPOS(UserSetup."User ID", '\') + 1, STRLEN(UserSetup."User ID"));
+                HrEmp.Reset();
+                HrEmp.setrange("No.", UserSetup."User ID");
+                HrEmp.setrange("OTP Code", OTP);
+                if HrEmp.find('-') then
+                    if CurrentDateTime < HrEmp."OTP Code Expiration" then
+                        Success := true;
+            end;
+        end;
+
         exit(Success);
     end;
 
@@ -1369,8 +1499,31 @@ codeunit 52186451 "Hr Portal"
         exit(OTP);
     end;
 
+    procedure AppendZerosToString(var MyString: Text)
+    var
+        ZerosToAdd: Integer;
+        Zeros: Text;
+    begin
+        ZerosToAdd := 6 - STRLEN(MyString);
 
-    procedure CreatePortalUser(Name: Text; NewPasswrd: Code[20]): Boolean
+        // If the string length is less than 6, append leading zeros
+        if ZerosToAdd > 0 then begin
+            Zeros := '';
+            // Append zeros to Zeros variable
+            repeat
+                Zeros := Zeros + '0';
+                ZerosToAdd := ZerosToAdd - 1;
+            until ZerosToAdd = 0;
+
+            // Concatenate leading zeros with the original string
+            MyString := Zeros + MyString;
+        end;
+    end;
+
+
+
+
+    procedure CreatePortalUser(Name: Text; NewPasswrd: Code[20]) status: Boolean
     var
         myInt: Integer;
         RandomDigit: Text[50];
@@ -1382,17 +1535,20 @@ codeunit 52186451 "Hr Portal"
         UserSet: Record "User Setup";
         NameX: Text;
     begin
+        status := false;
+        NameX := '';
+        NameX := COPYSTR(Name, STRPOS(Name, '\') + 1, STRLEN(Name));
         UserSet.Reset();
-        UserSet.SetRange("User ID", Name);
+        UserSet.SetRange("User ID", NameX);
         if UserSet.FindFirst() then begin
-            if UserSet."User ID" <> '' then
-                NameX := COPYSTR(UserSet."User ID", STRPOS(UserSet."User ID", '\') + 1, STRLEN(UserSet."User ID"));
+            // if UserSet."User ID" <> '' then
+            //     NameX := COPYSTR(UserSet."User ID", STRPOS(UserSet."User ID", '\') + 1, STRLEN(UserSet."User ID"));
             PortalUSer.Reset;
-            PortalUSer.SetRange("User Name", UserSet."User ID");
+            PortalUSer.SetRange("User Name", NameX);
             if not PortalUSer.FindSet then begin
                 PortalUSer.Init;
-                PortalUSer."User Name" := UserSet."User ID";
-                PortalUSer."Full Name" := UserSet."User ID";
+                PortalUSer."User Name" := UpperCase(Name);
+                PortalUSer."Full Name" := UpperCase(Name);
                 employee.Reset();
                 employee.SetRange("No.", NameX);
                 if employee.FindFirst() then
@@ -1407,13 +1563,41 @@ codeunit 52186451 "Hr Portal"
                 if not PortalUSer.Insert(true) then begin
                     Error('Account creation not successfull, Kindly contact ICT!')
                 end;
-                exit(true);
-            end else
-                exit(false);
-        end
-        else
-            exit(false);
-
+                status := true;
+                exit(status);
+            end;
+        end else begin
+            UserSet.Reset();
+            UserSet.SetRange("User ID", Name);
+            if UserSet.FindFirst() then begin
+                // if UserSet."User ID" <> '' then
+                //     NameX := COPYSTR(UserSet."User ID", STRPOS(UserSet."User ID", '\') + 1, STRLEN(UserSet."User ID"));
+                PortalUSer.Reset;
+                PortalUSer.SetRange("User Name", NameX);
+                if not PortalUSer.FindSet then begin
+                    PortalUSer.Init;
+                    PortalUSer."User Name" := UpperCase(Name);
+                    PortalUSer."Full Name" := UpperCase(Name);
+                    employee.Reset();
+                    employee.SetRange("No.", NameX);
+                    if employee.FindFirst() then
+                        PortalUSer."Authentication Email" := employee."Company E-Mail";
+                    PortalUSer.State := PortalUSer.State::Enabled;
+                    PortalUSer."Record Type" := PortalUSer."record type"::"Job Applicant";
+                    // RandomDigit := CreateGuid;
+                    // RandomDigit := DelChr(RandomDigit, '=', '{}-01');
+                    // RandomDigit := CopyStr(RandomDigit, 1, 8);
+                    PortalUSer."Password Value" := NewPasswrd;
+                    PortalUSer."Last Modified Date" := Today;
+                    if not PortalUSer.Insert(true) then begin
+                        Error('Account creation not successfull, Kindly contact ICT!')
+                    end;
+                    status := true;
+                    exit(status);
+                end;
+            end
+        end;
+        exit(status);
     end;
 
     procedure SendEmail(Username: Text)
@@ -1426,9 +1610,12 @@ codeunit 52186451 "Hr Portal"
         SMTP: Codeunit Mail;
         Receipients: List of [Text];
         Subject: Text[250];
+        NameX: Text;
     begin
+        NameX := '';
+        NameX := COPYSTR(Username, STRPOS(Username, '\') + 1, STRLEN(Username));
         PortalUser.Reset;
-        PortalUser.SetRange(PortalUser."User Name", Username);
+        PortalUser.SetRange(PortalUser."User Name", NameX);
         if PortalUser.FindSet then begin
             Subject := 'Portal Password';
             Body := 'Dear ' + PortalUser."Full Name" + ', your password for the account: ' + ' <strong>' + PortalUser."User Name" + '</strong> has been reset successfully. Kindly use the password below to access your account<br> <strong>Password: ' + PortalUser."Password Value" + '</strong> <br>';

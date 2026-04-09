@@ -19,7 +19,7 @@ table 52185467 "Login Register"
         {
             DataClassification = EndUserIdentifiableInformation;
             Caption = 'User ID';
-            TableRelation = "User Setup";
+            //TableRelation = "User Setup";
         }
         field(3; "Login Date"; Date)
         {

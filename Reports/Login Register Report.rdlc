@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2008/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="DataSource1">
+      <ConnectionProperties>
+        <DataProvider>System.Data.DataSet</DataProvider>
+        <ConnectString />
+      </ConnectionProperties>
+      <rd:DataSourceID>f1e1e1e1-1111-1111-1111-111111111111</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="LoginRegister">
+      <Fields>
+        <Field Name="Entry_No_">
+          <DataField>Entry_No_</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="User_ID">
+          <DataField>User_ID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Login_Date">
+          <DataField>Login_Date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Login_Time">
+          <DataField>Login_Time</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Logout_Time">
+          <DataField>Logout_Time</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Duration__Hours_">
+          <DataField>Duration__Hours_</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Work_Summary">
+          <DataField>Work_Summary</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Location_Name">
+          <DataField>Location_Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CI_Address">
+          <DataField>CI_Address</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Compname">
+          <DataField>Compname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CI_Address2">
+          <DataField>CI_Address2</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CI_City">
+          <DataField>CI_City</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CI_EMail">
+          <DataField>CI_EMail</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DataSource1</DataSourceName>
+        <CommandText />
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Body>
+    <ReportItems>
+      <Tablix Name="Tablix1">
+        <TablixBody>
+          <TablixColumns>
+            <TablixColumn><Width>1.2cm</Width></TablixColumn>
+            <TablixColumn><Width>2.5cm</Width></TablixColumn>
+            <TablixColumn><Width>2.5cm</Width></TablixColumn>
+            <TablixColumn><Width>2.5cm</Width></TablixColumn>
+            <TablixColumn><Width>2.5cm</Width></TablixColumn>
+            <TablixColumn><Width>2.5cm</Width></TablixColumn>
+            <TablixColumn><Width>3.5cm</Width></TablixColumn>
+            <TablixColumn><Width>2.5cm</Width></TablixColumn>
+          </TablixColumns>
+          <TablixRows>
+            <TablixRow>
+              <Height>0.7cm</Height>
+              <TablixCells>
+                <TablixCell><CellContents><Textbox Name="Entry_No_Header"><Value>Entry No.</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="User_ID_Header"><Value>User ID</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Login_Date_Header"><Value>Login Date</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Login_Time_Header"><Value>Login Time</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Logout_Time_Header"><Value>Logout Time</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Duration_Hours_Header"><Value>Duration (Hours)</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Work_Summary_Header"><Value>Work Summary</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Location_Name_Header"><Value>Location Name</Value></Textbox></CellContents></TablixCell>
+              </TablixCells>
+            </TablixRow>
+            <TablixRow>
+              <Height>0.7cm</Height>
+              <TablixCells>
+                <TablixCell><CellContents><Textbox Name="Entry_No"><Value>=Fields!Entry_No_.Value</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="User_ID"><Value>=Fields!User_ID.Value</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Login_Date"><Value>=Fields!Login_Date.Value</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Login_Time"><Value>=Fields!Login_Time.Value</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Logout_Time"><Value>=Fields!Logout_Time.Value</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Duration_Hours"><Value>=Fields!Duration__Hours_.Value</Value></Textbox></CellContents></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Work_Summary"><Value>=Fields!Work_Summary.Value</Value></Textbox></TablixCell>
+                <TablixCell><CellContents><Textbox Name="Location_Name"><Value>=Fields!Location_Name.Value</Value></Textbox></CellContents></TablixCell>
+              </TablixCells>
+            </TablixRow>
+          </TablixRows>
+        </TablixBody>
+        <TablixColumnHierarchy>
+          <TablixMembers>
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+            <TablixMember />
+          </TablixMembers>
+        </TablixColumnHierarchy>
+        <TablixRowHierarchy>
+          <TablixMembers>
+            <TablixMember />
+            <TablixMember />
+          </TablixMembers>
+        </TablixRowHierarchy>
+        <DataSetName>LoginRegister</DataSetName>
+      </Tablix>
+    </ReportItems>
+    <Height>3cm</Height>
+  </Body>
+  <Width>20cm</Width>
+  <Page>
+    <PageHeader>
+      <Height>2cm</Height>
+      <ReportItems>
+        <Textbox Name="ReportTitle">
+          <Top>0.2cm</Top>
+          <Left>0cm</Left>
+          <Height>0.8cm</Height>
+          <Width>20cm</Width>
+          <Value>=Fields!Compname.Value + " - Login Register Report"</Value>
+          <Style>
+            <FontSize>16pt</FontSize>
+            <FontWeight>Bold</FontWeight>
+            <TextAlign>Center</TextAlign>
+          </Style>
+        </Textbox>
+        <Textbox Name="CompanyAddress">
+          <Top>1.1cm</Top>
+          <Left>0cm</Left>
+          <Height>0.5cm</Height>
+          <Width>20cm</Width>
+          <Value>=Fields!CI_Address.Value + " " + Fields!CI_Address2.Value + ", " + Fields!CI_City.Value + " | " + Fields!CI_EMail.Value</Value>
+          <Style>
+            <FontSize>10pt</FontSize>
+            <TextAlign>Center</TextAlign>
+          </Style>
+        </Textbox>
+      </ReportItems>
+    </PageHeader>
+    <PageFooter>
+      <Height>1cm</Height>
+      <ReportItems>
+        <Textbox Name="PageNumber">
+          <Top>0.2cm</Top>
+          <Left>0cm</Left>
+          <Height>0.5cm</Height>
+          <Width>20cm</Width>
+          <Value>="Page " + Globals!PageNumber.ToString() + " of " + Globals!TotalPages.ToString()</Value>
+          <Style>
+            <FontSize>9pt</FontSize>
+            <TextAlign>Right</TextAlign>
+          </Style>
+        </Textbox>
+      </ReportItems>
+    </PageFooter>
+    <PageHeight>29.7cm</PageHeight>
+    <PageWidth>21cm</PageWidth>
+    <LeftMargin>1cm</LeftMargin>
+    <RightMargin>1cm</RightMargin>
+    <TopMargin>1cm</TopMargin>
+    <BottomMargin>1cm</BottomMargin>
+  </Page>
+</Report>

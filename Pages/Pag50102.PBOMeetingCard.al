@@ -260,6 +260,7 @@ page 52186426 "PBO Meeting Card"
                 {
                     ApplicationArea = all;
                     Promoted = true;
+                    Caption = 'Test Action';
                     PromotedCategory = Category5;
                     PromotedIsBig = true;
                     // Visible = false;
@@ -272,8 +273,7 @@ page 52186426 "PBO Meeting Card"
                         "PV Type": Text;
                         "Payment Type": Text;
                     begin
-                        Hrportal.GetPublicIPAddress();
-                        // Name := 'kkaimor\sharks.kk';
+                        Hrportal.GeneratePortalEmailOTPCode('greencom\MASTER.FELIX');          // Name := 'kkaimor\sharks.kk';
                         // Name := COPYSTR(Name, STRPOS(Name, '\') + 1, STRLEN(Name));
                         // MESSAGE(Name);
                         // "PV Type" := 'oops';

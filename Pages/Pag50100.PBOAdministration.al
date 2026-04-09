@@ -26,6 +26,11 @@ page 52186425 "PBO Administration"
     {
         area(Reporting)
         {
+            action("Login Register Report")
+            {
+                ApplicationArea = all;
+                RunObject = report "Login Register Report";
+            }
 
         }
         area(Sections)
