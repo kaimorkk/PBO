@@ -2,6 +2,7 @@ namespace PBO.PBO;
 using System.Utilities;
 using System.Security.User;
 using System.IO;
+using Microsoft.Sales.Customer;
 using System.Automation;
 using Microsoft.Foundation.Attachment;
 using Microsoft.Service.Document;
@@ -13,7 +14,7 @@ using System;
 using Microsoft.HumanResources.Employee;
 using System.Text;
 
-codeunit 52186451 "Hr Portal"
+codeunit 50000 "Hr Portal"
 {
     var
         HRLeave: Record "HR Leave Application";
@@ -67,7 +68,6 @@ codeunit 52186451 "Hr Portal"
             if DocumentRec.Find('-') then begin
                 if DocumentRec.ID = 0 then
                     exit;
-                // Ensure document has value in DB
                 if not DocumentRec."Document Reference ID".HasValue() then
                     exit;
                 //DocumentRec.OnBeforeExportAttachment(DocumentRec);
@@ -82,6 +82,28 @@ codeunit 52186451 "Hr Portal"
         end;
     end;
 
+    procedure InsertOrDeleteTags(Name: Text; Int: Integer)
+    var
+        myInt: Integer;
+        Sect: Record "Sector /Tags";
+    begin
+        if Int = 0 then begin
+            Sect.Reset();
+            Sect.Init();
+            if Sect.FindLast() then
+                myInt := Sect."Entry no" + 1 else
+                myInt := 1;
+            Sect."Entry no" := myInt;
+            Sect.Name := Name;
+            Sect.Insert();
+        end else begin
+            Sect.Reset();
+            Sect.SetRange("Entry no", Int);
+            if Sect.FindFirst() then
+                Sect.Delete();
+        end;
+    end;
+
 
     procedure ApproveDocument(DocumentNo: Text; ApproverID: Text)
     var
@@ -93,36 +115,17 @@ codeunit 52186451 "Hr Portal"
         ApprovalEntry: Record "Approval Entry";
         ApprovalSetup: Record "User Setup";
         Text004: Label 'Approval Setup not found.';
-
-
     begin
-        //exit(ApproverID);
         ApprovalEntry.Reset();
         ApprovalEntry.SetRange(ApprovalEntry."Document No.", DocumentNo);
         ApprovalEntry.SetRange(ApprovalEntry."Approver ID", ApproverID);
-        ApprovalEntry.SetRange(ApprovalEntry.Status, ApprovalEntry.Status::Open); //added to prevent double approval of a document
+        ApprovalEntry.SetRange(ApprovalEntry.Status, ApprovalEntry.Status::Open);
         if ApprovalEntry.Find('-') then begin
             repeat
                 if not ApprovalSetup.Get(ApproverID) then
                     Error(Text004);
                 if ApprovalEntry."Approver ID" <> '' then
                     CustomApprovals.ApproveApprovalRequests(ApprovalEntry);
-            // else begin
-            //     UserSetup.Reset();
-            //     UserSetup.SetRange("Approval Administrator", true);
-            //     if UserSetup.FindFirst() then begin
-            //         //ApprovalEntry.Status := ApprovalEntry.Status::Approved;
-            //         ApprovalEntry."Approver ID" := UserSetup."User ID";
-            //         ApprovalEntry.Modify();
-            //         AppEntr.Reset();
-            //         AppEntr.SetRange(AppEntr."Entry No.", ApprovalEntry."Entry No.");
-            //         if AppEntr.FindFirst() then
-            //             //commit;
-            //             CustomApprovals.ApproveApprovalRequests(AppEntr)
-            //     end;
-            //     Message('Approved');
-            //CustomApprovals.OnApproveApprovalRequest(ApprovalEntry);
-            //end;
             until ApprovalEntry.Next() = 0;
         end;
 
@@ -132,6 +135,7 @@ codeunit 52186451 "Hr Portal"
     procedure UploadAttachedDocument(DocNo: Code[20]; FileName: Text[2000]; Attachment: BigText; TableID: Integer; Sponsor: Text; Description: Text);
     var
         myInt: Integer;
+        Version: Integer;
         DocAttachment: Record "Document Attachment";
         FromRecRef: RecordRef;
         FileManagement: Codeunit "File Management";
@@ -186,7 +190,11 @@ codeunit 52186451 "Hr Portal"
         end;
         if tableFound = true then begin
             if FileName <> '' then begin
+                Version := 0;
                 Clear(DocAttachment);
+                DocAttachment.Reset();
+                DocAttachment.SetRange("No.", DocNo);
+                Version := DocAttachment.Count;
                 DocAttachment.Init();
                 DocAttachment.Validate("File Extension", FileManagement.GetExtension(FileName));
                 DocAttachment.Validate("File Name", CopyStr(FileManagement.GetFileNameWithoutExtension(FileName), 1, MaxStrLen(FileName)));
@@ -194,6 +202,7 @@ codeunit 52186451 "Hr Portal"
                 DocAttachment.Validate("No.", DocNo);
                 DocAttachment.Description := Description;
                 DocAttachment.Sponsor := Sponsor;
+                DocAttachment.Version := 'V' + Format(Version + 1);
                 Bytes := Convert.FromBase64String(Attachment);
                 MemoryStream := MemoryStream.MemoryStream(Bytes);
                 DocAttachment."Document Reference ID".ImportStream(MemoryStream, '', FileName);
@@ -385,15 +394,22 @@ codeunit 52186451 "Hr Portal"
     var
         LoginRegister: Record "Login Register";
         entryNo: Integer;
+        Total: Integer;
         NameX: Text;
+        employees: Record Employee;
     begin
         NameX := '';
-        NameX := COPYSTR(UserID, STRPOS(UserID, '\') + 1, STRLEN(UserID));
+        entryNo := 0;
+        Total := 0;
+        IF STRPOS(UserID, '\') > 0 THEN
+            NameX := COPYSTR(UserID, STRPOS(UserID, '\') + 1, STRLEN(UserID))
+        ELSE
+            NameX := UserID;
+        // NameX := '';
+        // NameX := COPYSTR(UserID, STRPOS(UserID, '\') + 1, STRLEN(UserID));
         LoginRegister.Reset();
-        if LoginRegister.FindLast() then
-            entryNo := LoginRegister."Entry No." + 1
-        else
-            entryNo := 1;
+        Total := LoginRegister.Count;
+        entryNo := Total + 1;
         LoginRegister.Reset();
         LoginRegister.SetRange("User ID", UserID);
         LoginRegister.SetRange(LoginRegister."Login Type", LoginRegister."Login Type"::Login);
@@ -402,12 +418,48 @@ codeunit 52186451 "Hr Portal"
             LoginRegister.Init();
             LoginRegister."Entry No." := entryNo;
             LoginRegister."User ID" := UserID;
+            LoginRegister."Login Name" := NameX;
             LoginRegister."Login Type" := LoginRegister."Login Type"::Login;
             LoginRegister."Work Summary" := Worksummary;
             LoginRegister."Login Date" := Today;
             LoginRegister."Login Time" := Time;
+            LoginRegister."Login Status" := LoginRegister."Login Status"::Available;
+
+            NameX := '';
+            NameX := COPYSTR(UserID, STRPOS(UserID, '\') + 1, STRLEN(UserID));
+            employees.Reset();
+            employees.setrange("No.", NameX);
+            if employees.findfirst() then begin
+                LoginRegister."Global Dimension 1 Code" := employees."Global Dimension 1 Code";
+                employees."Login Status" := employees."Login Status"::Available;
+                employees.Modify();
+            end;
             LoginRegister.Insert(true);
             exit(LoginRegister."Entry No.");
+        end else begin
+            LoginRegister.Reset();
+            LoginRegister.SetRange("User ID", UserID);
+            LoginRegister.SetRange(LoginRegister."Login Type", LoginRegister."Login Type"::Login);
+            LoginRegister.SetRange("Login Date", Today);
+            if LoginRegister.FindFirst() then begin
+                LoginRegister."Login Name" := NameX;
+                LoginRegister."Login Status" := LoginRegister."Login Status"::Available;
+                employees.Reset();
+                employees.setrange("No.", NameX);
+                if employees.findfirst() then begin
+                    LoginRegister."Global Dimension 1 Code" := employees."Global Dimension 1 Code";
+                    employees."Login Status" := employees."Login Status"::Available;
+                    employees.Modify();
+                end;
+                LoginRegister.Modify();
+
+            end;
+            // employees.Reset();
+            // employees.setrange("No.", NameX);
+            // if employees.findfirst() then begin
+            //     employees."Login Status" := employees."Login Status"::Available;
+            //     employees.Modify();
+            // end;
         end;
     end;
 
@@ -416,6 +468,7 @@ codeunit 52186451 "Hr Portal"
         LoginRegister: Record "Login Register";
         entryNo: Integer;
         NameX: Text;
+        employees: Record Employee;
     begin
         NameX := '';
         NameX := COPYSTR(UserID, STRPOS(UserID, '\') + 1, STRLEN(UserID));
@@ -429,6 +482,12 @@ codeunit 52186451 "Hr Portal"
         LoginRegister."User ID" := UserID;
         LoginRegister."Work Summary" := Worksummary;
         LoginRegister."Login Date" := Today;
+        LoginRegister."Login Name" := NameX;
+        employees.Reset();
+        employees.setrange("No.", NameX);
+        if employees.findfirst() then begin
+            LoginRegister."Global Dimension 1 Code" := employees."Global Dimension 1 Code";
+        end;
         LoginRegister.Location := Location;
         LoginRegister.Validate(LoginRegister.Location);
         LoginRegister."Login Type" := LoginRegister."Login Type"::Task;
@@ -452,6 +511,7 @@ codeunit 52186451 "Hr Portal"
             LoginRegister."User ID" := UserID;
             LoginRegister."Work Summary" := Worksummary;
             LoginRegister."Login Date" := Today;
+            LoginRegister."Login Name" := NameX;
             LoginRegister.Location := Location;
             LoginRegister.Validate(LoginRegister.Location);
             LoginRegister."Login Type" := LoginRegister."Login Type"::Task;
@@ -564,7 +624,7 @@ codeunit 52186451 "Hr Portal"
         end;
     end;
 
-    procedure HRLeaveAppInsert(EmployeeNo: Text; Names: Text; LeaveType: Text; DaysApplied: Decimal; StartDate: Date; ReturnDate: Date; ApplicationDate: Date; Status: Integer; EndDate: Date; UserID: Text; applicantComments: Text[250]; ResponsibilityCenter: Code[20]; "Request Leave Allowance": Boolean) HR_Doc_No: Code[20]
+    procedure HRLeaveAppInsert(EmployeeNo: Text; StartDate: Date; EndDate: Date; UserIDCode: Text; applicantComments: Text[250]; Department: Code[20]; DocNo: code[20]) HR_Doc_No: Code[20]
     var
         HRLeave: Record "HR Leave Application";
         HREmp: Record Employee;
@@ -573,46 +633,62 @@ codeunit 52186451 "Hr Portal"
     begin
 
         begin
-            NameX := '';
-            NameX := COPYSTR(UserID, STRPOS(UserID, '\') + 1, STRLEN(UserID));
-            UserID := NameX;
-            HRLeave.Reset();
-            HRLeave.SetRange(HRLeave."Employee No", EmployeeNo);
-            //  HRLeave.SETRANGE(HRLeave."Leave Type", LeaveType);
-            HRLeave.SetFilter(HRLeave.Status, '%1|%2', HRLeave.Status::New, HRLeave.Status::"Pending Approval");
-
-            if HRLeave.Find('-') then
-                Error(Text005, LeaveType);
-            HREmp.Get(EmployeeNo);
-            HRLeave.Reset();
-
-            HRLeave."Employee No" := EmployeeNo;
-            HRLeave.Names := Names;
-            HRLeave."Leave Type" := LeaveType;
-            HRLeave."Days Applied" := DaysApplied;
-            HRLeave."Start Date" := StartDate;
-            HRLeave."End Date" := EndDate;
-            HRLeave."Return Date" := ReturnDate;
-            HRLeave."Application Date" := ApplicationDate;
-            HRLeave.Status := Status;
-            HRLeave."User ID" := UserID;
-            //HRLeave."User ID" := HREmp."User ID";
-            HRLeave."Applicant Comments" := applicantComments;
-            HRLeave."Responsibility Center" := ResponsibilityCenter;
-            HRLeave."Job Tittle" := HREmp."Job Title";
-            HRLeave."Request Leave Allowance" := "Request Leave Allowance";
-            HRLeave.Insert(true);
-            HRLeave.Validate("Days Applied");
-            HR_Doc_No := HRLeave."Application Code";
-            if HR_Doc_No <> '' then
-                exit(HR_Doc_No);
-
+            if DocNo = '' then begin
+                HRLeave.Reset();
+                HRLeave.SetRange(HRLeave."Employee No", EmployeeNo);
+                if HRLeave.Find('-') then
+                    repeat
+                        if (StartDate < HRLeave."Return Date") or (EndDate < HRLeave."Return Date")
+                        then
+                            Error('Your Leave Application Overlaps with leave application [ %1 - %2 ] which is Approved and has a Return Date exceeding the Start Date specified for your current application.', HRLeave."Application Code", HRLeave."Leave Type");
+                    until HRLeave.Next() = 0;
+                NameX := '';
+                NameX := COPYSTR(UserIDCode, STRPOS(UserIDCode, '\') + 1, STRLEN(UserIDCode));
+                UserIDCode := NameX;
+                HREmp.Get(EmployeeNo);
+                HRLeave.Reset();
+                HRLeave.init;
+                HRLeave."Employee No" := EmployeeNo;
+                HRLeave."Start Date" := StartDate;
+                HRLeave.Names := HREmp."Search Name";
+                HRLeave."End Date" := EndDate;
+                HRLeave."Application Date" := Today;
+                HRLeave."User ID" := UserID;
+                //HRLeave."User ID" := HREmp."User ID";
+                HRLeave."Applicant Comments" := applicantComments;
+                HRLeave."Responsibility Center" := Department;
+                HRLeave."Job Tittle" := HREmp."Job Title";
+                HRLeave.Insert(true);
+                // HRLeave.Validate("Days Applied");
+                HR_Doc_No := HRLeave."Application Code";
+                if HR_Doc_No <> '' then
+                    exit(HR_Doc_No);
+            end else begin
+                HRLeave.Reset();
+                HRLeave.SetRange("Application Code", DocNo);
+                if HRLeave.FindFirst() then begin
+                    HRLeave."Employee No" := EmployeeNo;
+                    HRLeave."Start Date" := StartDate;
+                    HRLeave.Names := HREmp."Search Name";
+                    HRLeave."End Date" := EndDate;
+                    HRLeave."Application Date" := Today;
+                    HRLeave."User ID" := UserID;
+                    //HRLeave."User ID" := HREmp."User ID";
+                    HRLeave."Applicant Comments" := applicantComments;
+                    HRLeave."Responsibility Center" := Department;
+                    HRLeave."Job Tittle" := HREmp."Job Title";
+                    HRLeave.Modify();
+                    HR_Doc_No := HRLeave."Application Code";
+                    if HR_Doc_No <> '' then
+                        exit(HR_Doc_No);
+                end;
+            end;
             //SendLeaveForApproval(HR_Doc_No);
 
         end
     end;
 
-    procedure HRLeaveAppModify(ApplicationCode: Code[50]; EmployeeNo: Text; Names: Text; LeaveType: Text; DaysApplied: Decimal; StartDate: Date; ReturnDate: Date; ApplicationDate: Date; Status: Integer; EndDate: Date; UserID: Text; applicantComments: Text[250]; ResponsibilityCenter: Code[20]; "Request Leave Allowance": Boolean; LineNum: Integer; PlannerNum: Code[40]) HR_Doc_No: Code[20]
+    procedure HRLeaveAppModify(ApplicationCode: Code[50]; EmployeeNo: Text; Names: Text; LeaveType: Text; DaysApplied: Decimal; StartDate: Date; ReturnDate: Date; ApplicationDate: Date; Status: Integer; EndDate: Date; UserIDCode: Text; applicantComments: Text[250]; ResponsibilityCenter: Code[20]; "Request Leave Allowance": Boolean; LineNum: Integer; PlannerNum: Code[40]) HR_Doc_No: Code[20]
     var
         HRLeave: Record "HR Leave Application";
         HREmp: Record Employee;
@@ -707,13 +783,8 @@ codeunit 52186451 "Hr Portal"
                                    HRLvType.Description, HRLeave."Application Code", HRLeave.Status, HRLeave."Leave Type");
                 end;
             end;
-
-            //error('simama hapa');
-            //Added Dan - Not allow someone to apply leave more than once in a FY Year
             VarVariant := LeaveApplication;
             ApprovalMgt.OnSendDocForApproval(VarVariant);
-
-            //ApprovalMgt.SendLeaveAppApprovalReq(LeaveApplication);
         end
     end;
 
@@ -755,15 +826,6 @@ codeunit 52186451 "Hr Portal"
             if CopyStr(MOBILE, 1, 1) = '7' then
                 MOBILE := '254' + MOBILE
         end;
-        // {
-        //  "issn":"BigCatchLTD",
-        //  "msisdn":254724982440,
-        //  "text":"This is a test api message",
-        //  "username":"bigcatchltd",
-        //  "password":"9063aa8c7bf68fa1edc41e9c1c6c8b54",
-        //  "sms_id":"sms_id"
-        // }
-        // Create JSON payload
         JsonObject := '{' +
     '"password": "' + passwd + '",' +
     '"username": "' + ClientId + '",' +
@@ -771,22 +833,6 @@ codeunit 52186451 "Hr Portal"
     '"text": "' + Message + '",' +
     '"issn": "' + SenderID + '"' +
 '}';
-        // Prepare HTTP request
-        // SMSMessage.Reset();text
-        // SMSMessage.SetRange("Loan No", LoanNo);
-        // SMSMessage.SetRange("Message Type", SMSMessage."Message Type"::"Installment Reminder");
-        // SMSMessage.SetRange("Date Entered", Today);
-        // SMSMessage.SetRange(Sent, true);
-        // if SMSMessage.FindFirst() then
-        //     exit;
-        // SMSMessage.Reset();
-        // SMSMessage.SetRange("Loan No", LoanNo);
-        // SMSMessage.SetRange("Message Type", SMSMessage."Message Type"::"Arrears Reminder");
-
-        // SMSMessage.SetRange("Date Entered", Today);
-        // SMSMessage.SetRange(Sent, true);
-        // if SMSMessage.FindFirst() then
-        //     exit;
         RequestContent.WriteFrom(JsonObject);
 
         //KKAIMOR
@@ -874,15 +920,19 @@ codeunit 52186451 "Hr Portal"
 
     end;
 
-    procedure EditTaskfiles(DOCN: Code[40]; AuthorCode: Code[40]; reference: Code[200]; Departmen: Text; Receiver: Code[40]; Remarks: Text; Action: Text; DocTyp: Integer; TaskDuration: DateFormula; TaskTyp: Integer; Duedate: Date): Boolean
+    procedure EditTaskfiles(DOCN: Code[40]; AuthorCode: Code[40]; reference: Code[200]; Departmen: Text; Receiver: Code[40]; Remarks: Text; Action: Text; DocTyp: Integer; TaskDuration: DateFormula; TaskTyp: Integer; Duedate: Date; SectCategory: Text; IncomingDate: Date; IsDepartmentTask: Boolean; Priority: Integer): Boolean
     var
 
         myInt: Integer;
+        Numberofdays: Integer;
+        TaskD: DateFormula;
+        DurationText: Text;
         TaskVolumes: Record "Files Table";
         MembNoSeries: Record "HR setup";
         NoSeriesMgt: Codeunit NoSeriesManagement;
         DocNo: Code[30];
     begin
+        Numberofdays := 0;
         TaskVolumes.Reset();
         TaskVolumes.SetRange(DocNo, DOCN);
         if TaskVolumes.FindFirst() then begin
@@ -890,23 +940,32 @@ codeunit 52186451 "Hr Portal"
                 TaskVolumes."Document Type" := DocTyp;
                 TaskVolumes.Validate(TaskVolumes."Document Type");
             end;
-            // MembNoSeries.TestField(MembNoSeries."File Entry No.");
-            // DocNo := NoSeriesMgt.GetNextNo(MembNoSeries."File Entry No.", 0D, True);
-            //  TaskVolumes."Entry No." := DocNo;
             TaskVolumes."Author Code" := AuthorCode;
             TaskVolumes.Validate(TaskVolumes."Author Code");
             TaskVolumes.Reference := Reference;
+            TaskVolumes.Priority := Priority;
             TaskVolumes."File Type" := TaskTyp;
-            TaskVolumes."Task Duration" := TaskDuration;
+            TaskVolumes."Sector/Category" := SectCategory;
+            TaskVolumes."Incoming Date" := IncomingDate;
+            TaskVolumes."Due Date" := Duedate;
+            if TaskVolumes."Incoming Date" > TaskVolumes."Due Date" then
+                Error('Due Date cannot be less than Incoming Date');
+            Numberofdays := Duedate - IncomingDate;
+            Evaluate(TaskD, Format(Numberofdays) + 'D');
+            TaskVolumes."Task Duration" := TaskD;
+            TaskVolumes."Is department Task" := IsDepartmentTask;
+            // TaskVolumes."Task Duration" := TaskDuration;
+            // Evaluate(DurationText, Format(TaskVolumes."Task Duration"));
+            // DurationText := DelChr(Format(DurationText), '=', '-|+|');
+            // Evaluate(TaskVolumes."Task Duration", DurationText);
+            // TaskVolumes."Due Date" := CalcDate(TaskVolumes."Task Duration", TaskVolumes."Incoming Date");
             TaskVolumes."Task Date" := Today;
             TaskVolumes.Receiver := Receiver;
             TaskVolumes.Validate(Receiver);
-            TaskVolumes."Due Date" := Duedate;
             TaskVolumes.Department := Departmen;
             TaskVolumes.Validate(Department);
             TaskVolumes.Action := Action;
             TaskVolumes."Task Status" := TaskVolumes."Task Status"::Open;
-            // TaskVolumes.Feedback := FileTabes.Feedback;
             TaskVolumes.Remarks := Remarks;
             if TaskVolumes.Modify() then
                 exit(true)
@@ -959,16 +1018,13 @@ codeunit 52186451 "Hr Portal"
         JObject: JsonObject;
         testMac: Text;
     begin
-        // Call external API that returns MAC address
-        // You'd need to create your own endpoint or use a third-party service
         if Client.Get('https://your-api-endpoint.com/getmac', Response) then begin
             if Response.IsSuccessStatusCode then begin
                 Response.Content.ReadAs(Content);
-
                 if JObject.ReadFrom(Content) then
                     if JObject.Get('macAddress', JToken) then
                         testMac := JToken.AsValue().AsText();
-                Message(testMac);
+                // Message(testMac);
                 exit(JToken.AsValue().AsText());
             end;
         end;
@@ -976,13 +1032,16 @@ codeunit 52186451 "Hr Portal"
         exit('');
     end;
 
-    procedure CreatFilesTask(AuthorCode: Code[40]; reference: Code[200]; Duedate: Date; Departmen: Text; Receiver: Code[40]; Remarks: Text; Action: Text; DocTyp: Integer; TaskDuration: DateFormula; TaskTyp: Integer): code[40]
+    procedure CreatFilesTask(AuthorCode: Code[40]; reference: Code[200]; Duedate: Date; Departmen: Text; Receiver: Code[40]; Remarks: Text; Action: Text; DocTyp: Integer; TaskDuration: DateFormula; TaskTyp: Integer; SectCategory: Text; IncomingDate: Date; IsDepartmentTask: Boolean; Priority: Integer): code[40]
     var
         myInt: Integer;
+        DurationText: Text;
         TaskVolumes: Record "Files Table";
         MembNoSeries: Record "HR setup";
         NoSeriesMgt: Codeunit NoSeriesManagement;
         DocNo: Code[30];
+        Numberofdays: Integer;
+        TaskD: DateFormula;
     begin
         MembNoSeries.Get();
         TaskVolumes.Reset();
@@ -990,16 +1049,29 @@ codeunit 52186451 "Hr Portal"
         DocNo := '';
         MembNoSeries.Get;
         TaskVolumes."Document Type" := DocTyp;
+        TaskVolumes."Is department Task" := IsDepartmentTask;
         TaskVolumes.Validate(TaskVolumes."Document Type");
         MembNoSeries.TestField(MembNoSeries."File Entry No.");
         DocNo := NoSeriesMgt.GetNextNo(MembNoSeries."File Entry No.", 0D, True);
         TaskVolumes.DocNO := DocNo;
+        TaskVolumes.Priority := Priority;
         TaskVolumes."Author Code" := AuthorCode;
         TaskVolumes.Validate(TaskVolumes."Author Code");
         TaskVolumes.Reference := Reference;
-        TaskVolumes."Task Date" := Today;
+        TaskVolumes."Sector/Category" := SectCategory;
+        TaskVolumes."Incoming Date" := IncomingDate;
         TaskVolumes."Due Date" := Duedate;
-        TaskVolumes."Task Duration" := TaskDuration;
+        TaskVolumes."Captured By" := AuthorCode;
+        if TaskVolumes."Incoming Date" > TaskVolumes."Due Date" then
+            Error('Due Date cannot be less than Incoming Date');
+        Numberofdays := Duedate - IncomingDate;
+        Evaluate(TaskD, Format(Numberofdays) + 'D');
+        TaskVolumes."Task Duration" := TaskD;
+        // TaskVolumes."Task Duration" := TaskDuration;
+        // Evaluate(DurationText, Format(TaskVolumes."Task Duration"));
+        // DurationText := DelChr(Format(DurationText), '=', '-|+|');
+        // Evaluate(TaskVolumes."Task Duration", DurationText);
+        // TaskVolumes."Due Date" := CalcDate(TaskVolumes."Task Duration", TaskVolumes."Incoming Date");
         TaskVolumes.Receiver := Receiver;
         TaskVolumes.Validate(Receiver);
         TaskVolumes."File Type" := TaskTyp;
@@ -1007,20 +1079,22 @@ codeunit 52186451 "Hr Portal"
         TaskVolumes.Validate(Department);
         TaskVolumes.Action := Action;
         TaskVolumes."Task Status" := TaskVolumes."Task Status"::Open;
-        // TaskVolumes.Feedback := FileTabes.Feedback;
         TaskVolumes.Remarks := Remarks;
         if TaskVolumes.Insert() then
             exit(TaskVolumes."Entry No.");
-
     end;
 
-    procedure UpdateFilesTask(DocNumber: Code[30]; AuthorCode: Code[40]; reference: Code[200]; Duedate: Date; Departmen: Text; Receiver: Code[40]; Remarks: Text; Action: Text; DocTyp: Integer; TaskDuration: DateFormula): code[40]
+    procedure UpdateFilesTask(DocNumber: Code[30]; AuthorCode: Code[40]; reference: Code[200]; Duedate: Date; Departmen: Text; Receiver: Code[40]; Remarks: Text; Action: Text; DocTyp: Integer; TaskDuration: DateFormula; SectCategory: Text; IncomingDate: Date; IsDepartmentTask: Boolean): code[40]
     var
         myInt: Integer;
+        DurationText: Text;
         TaskVolumes: Record "Files Table";
         MembNoSeries: Record "HR setup";
         NoSeriesMgt: Codeunit NoSeriesManagement;
         DocNo: Code[30];
+        TaskVo: Record "Task Volumes";
+        Numberofdays: Integer;
+        TaskD: DateFormula;
     begin
         MembNoSeries.Get();
         TaskVolumes.Reset();
@@ -1030,22 +1104,28 @@ codeunit 52186451 "Hr Portal"
             MembNoSeries.Get;
             TaskVolumes."Document Type" := DocTyp;
             TaskVolumes.Validate(TaskVolumes."Document Type");
-            //MembNoSeries.TestField(MembNoSeries."File Entry No.");
-            // DocNo := NoSeriesMgt.GetNextNo(MembNoSeries."File Entry No.", 0D, True);
-            //  TaskVolumes."Entry No." := DocNo;
             TaskVolumes."Author Code" := AuthorCode;
+            TaskVolumes."Sector/Category" := SectCategory;
             TaskVolumes.Validate(TaskVolumes."Author Code");
             TaskVolumes.Reference := Reference;
-            TaskVolumes."Task Date" := Today;
+            TaskVolumes."Incoming Date" := IncomingDate;
             TaskVolumes."Due Date" := Duedate;
-            TaskVolumes."Task Duration" := TaskDuration;
+            if TaskVolumes."Incoming Date" > TaskVolumes."Due Date" then
+                Error('Due Date cannot be less than Incoming Date');
+            Numberofdays := Duedate - IncomingDate;
+            Evaluate(TaskD, Format(Numberofdays) + 'D');
+            TaskVolumes."Task Duration" := TaskD;
+            // TaskVolumes."Incoming Date" := Duedate;
+            // TaskVolumes."Task Duration" := TaskDuration;
+            // Evaluate(DurationText, Format(TaskVolumes."Task Duration"));
+            // DurationText := DelChr(Format(DurationText), '=', '-|+|');
+            // Evaluate(TaskVolumes."Task Duration", DurationText);
+            // TaskVolumes."Due Date" := CalcDate(TaskVolumes."Task Duration", TaskVolumes."Incoming Date");
             TaskVolumes.Receiver := Receiver;
             TaskVolumes.Department := Departmen;
             TaskVolumes.Action := Action;
-            // TaskVolumes.Feedback := FileTabes.Feedback;
             TaskVolumes.Remarks := Remarks;
             TaskVolumes.Modify();
-            // exit(TaskVolumes."Entry No.");
         end;
 
     end;
@@ -1080,12 +1160,13 @@ codeunit 52186451 "Hr Portal"
                     if GenSetUp."Allow Send SMS" then begin
                         if Employee."Phone No." <> '' then begin //Check if the mobile phone No is not blank but dont return an error
                                                                  // msg := 'Dear ' + AccName + ', you have  been Selected to be a Executive Commitee Of meeting no. ' + ' ' + HRDiscipMemb."Meeting Code" + ' ' + 'and the meeting date is ' + Format(rec."Meeting Date") + ' ' + 'Kindly for Further Information Contact the Head department. Thank you.';
-                            msg := 'Dear ' + AccName + '<br><>br'', you have  been assigned  the follwowing task ' + HRDiscipMemb.Task + ' by  meeting no. ' + ' ' + Meetcode + ' ' + '' + 'Kindly for Further Information Contact the Head department. Thank you.';
+                                                                 // msg := 'Dear ' + AccName + '<br><>br'', you have  been assigned  the follwowing task ' + HRDiscipMemb.Task + ' by  meeting no. ' + ' ' + Meetcode + ' ' + '' + 'Kindly for Further Information Contact the Head department. Thank you.';
+                            msg := 'Dear ' + AccName + ', you have  been assigned ' + HRDiscipMemb.Task + ' by  meeting no. ' + ' ' + Meetcode + ' ' + '' + 'Kindly Purpose to attend. Thank you.';
                             SureFactory.SendPboComSMS(Employee."Phone No.", msg, Employee."No.", MessageTY);
                         end;
                     end;
                     if GenSetUp."Notify Vie Mail" = true then begin
-                        msg := 'Dear ' + AccName + '<br><>br'', you have  been assigned  the follwowing task ' + HRDiscipMemb.Task + ' by  meeting no. ' + ' ' + Meetcode + ' ' + '' + 'Kindly for Further Information Contact the Head department. Thank you.';
+                        msg := 'Dear ' + AccName + '<br><>br'', you have  been assigned ' + HRDiscipMemb.Task + ' by  meeting no. ' + ' ' + Meetcode + ' ' + '' + 'Kindly for Further Information Contact the Head department. Thank you.';
                         EmailManager.Create(HRDiscipMemb.Email, 'Commitee Notifications', msg, true);
                         Email.Send(EmailManager, Enum::"Email Scenario"::Default);
                     end;
@@ -1096,10 +1177,19 @@ codeunit 52186451 "Hr Portal"
         end else begin
             exit(Status);
         end;
-
     end;
 
-    procedure SendAndNotifyReceiver(DocNUm: Code[40]; ReceiverCode: Code[20]) Status: Boolean;
+    procedure NewLine() NewLine: Text
+    var
+        nL: Char;
+    begin
+
+        nL := 13;
+        NewLine := Format(nL, 0, '<CHAR>');
+    end;
+
+
+    procedure SendAndNotifyReceiver(DocNUm: Code[40]; ReceiverCode: Code[20]; Remarks: Text; Action: Text; AuthorCode: Code[20]; Priority: Integer) Status: Boolean;
     var
         myInt: Integer;
         AccName: Text;
@@ -1119,7 +1209,6 @@ codeunit 52186451 "Hr Portal"
         GenSetUp: Record "HR setup";
         SureFactory: Codeunit "Hr Portal";
         MessageTY: Enum "Message Type";
-
     begin
         Status := false;
         MessageTY := MessageTY::"Meeting Notification";
@@ -1133,20 +1222,30 @@ codeunit 52186451 "Hr Portal"
                     AccName := Employee."First Name";
                     if AccName = '' then
                         AccName := Employee."Middle Name";
+                    if Action = '' then
+                        Action := HRDiscipMemb.Action;
                     GenSetUp.get();
                     if GenSetUp."Allow Send SMS" then begin
-                        if Employee."Phone No." <> '' then begin //Check if the mobile phone No is not blank but dont return an error
-                                                                 // msg := 'Dear ' + AccName + ', you have  been Selected to be a Executive Commitee Of meeting no. ' + ' ' + HRDiscipMemb."Meeting Code" + ' ' + 'and the meeting date is ' + Format(rec."Meeting Date") + ' ' + 'Kindly for Further Information Contact the Head department. Thank you.';
-                                                                 // msg := 'Dear ' + AccName + '<br><>br'', you have  been assigned  the follwowing task ' + HRDiscipMemb.Task + ' by  meeting no. ' + ' ' + Meetcode + ' ' + '' + 'Kindly for Further Information Contact the Head department. Thank you.';
-                            msg := 'Dear ' + AccName + ', you have  been assigned task no. ' + ' ' + HRDiscipMemb."Entry No." + ' ' + 'and the task assigned date is ' + Format(HRDiscipMemb."Task Date") + ' ' + 'Kindly for Further Information Contact the Head department. Thank you.';
+                        if Employee."Phone No." <> '' then begin
+
+                            msg := 'Dear ' + AccName + '\n' +
+                             'You have received a Task notification on  ' + Format(HRDiscipMemb."Document Type") + ' Task no. ' + HRDiscipMemb."Entry No." + '\n' +
+                              Action + '\n' +
+                              'Task due date is ' + Format(HRDiscipMemb."Due Date") + '\n' +
+                               'Thank you.';
                             SureFactory.SendPboComSMS(Employee."Phone No.", msg, Employee."No.", MessageTY);
                         end;
                     end;
                     if GenSetUp."Notify Vie Mail" = true then begin
+                        if Employee."Company E-Mail" <> '' then begin
+                            msg := 'Dear ' + AccName + '<br>' +
+                              'You have received a Task notification on  ' + Format(HRDiscipMemb."Document Type") + ' Task no. ' + HRDiscipMemb."Entry No." + '<br>' + Action + '<br>' +
+                              'Task assigned due date is ' + Format(HRDiscipMemb."Due Date") + '<br>' +
+                               'Thank you.';
+                            EmailManager.Create(Employee."Company E-Mail", 'PBO Notifications', msg, true);
 
-                        msg := 'Dear ' + AccName + ', you have  been assigned task no. ' + ' ' + HRDiscipMemb."Entry No." + ' ' + 'and the task assigned date is ' + Format(HRDiscipMemb."Task Date") + ' ' + 'Kindly for Further Information Contact the Head department. Thank you.';
-                        EmailManager.Create(HRDiscipMemb."Reciever Mail", 'PBO Notifications', msg, true);
-                        Email.Send(EmailManager, Enum::"Email Scenario"::Default);
+                            Email.Send(EmailManager, Enum::"Email Scenario"::Default);
+                        end;
                     end;
                 end;
             until HRDiscipMemb.Next() = 0;
@@ -1156,40 +1255,84 @@ codeunit 52186451 "Hr Portal"
         FileTabes.SetRange(DocNo, DocNUm);
         if FileTabes.FindFirst() then begin
             TaskVolumes.Reset();
+            TaskVolumes.SetRange("Task Volume", FileTabes."Entry No.");
+            TaskVolumes.SetRange(TaskVolumes.Receiver, AuthorCode);
+            if TaskVolumes.FindLast() then begin
+                TaskVolumes.Forwarded := true;
+                TaskVolumes.Modify();
+            end;
             TaskVolumes.Init();
             SeriesSetup.Get;
             SeriesSetup.TestField(SeriesSetup."Volume Entry No.");
             DocNoE := NoSeriesMgt.GetNextNo(SeriesSetup."Volume Entry No.", 0D, True);
             TaskVolumes."File No." := FileTabes.DocNO;
             TaskVolumes."Volume Entry No." := DocNoE;
-            TaskVolumes."Author Code" := ReceiverCode;
+            TaskVolumes."Task Volume" := FileTabes."Entry No.";
+            TaskVolumes."Author Code" := AuthorCode;
             TaskVolumes.Validate(TaskVolumes."Author Code");
             TaskVolumes."Date Received" := Today;
             TaskVolumes."File Type" := FileTabes."File Type";
+            TaskVolumes."Is Department Task" := FileTabes."Is Department Task";
+            TaskVolumes."Sector/Category" := FileTabes."Sector/Category";
             TaskVolumes."Document Type" := FileTabes."Document Type";
             TaskVolumes."Incoming Date" := FileTabes."Incoming Date";
+            TaskVolumes."Due Date" := FileTabes."Due Date";
             TaskVolumes.Reference := FileTabes.Reference;
             TaskVolumes."Task Date" := FileTabes."Task Date";
-            TaskVolumes."Receiver Code" := '';
+            TaskVolumes."Receiver Code" := ReceiverCode;
+            TaskVolumes.Receiver := ReceiverCode;
             //TaskVolumes.Validate(TaskVolumes."Receiver Code");
             TaskVolumes.Department := FileTabes.Department;
             TaskVolumes.Validate(TaskVolumes.Department);
-            TaskVolumes.Action := FileTabes.Action;
+            TaskVolumes.Action := Action;
             TaskVolumes."Task Status" := FileTabes."Task Status"::Forwared;
-            TaskVolumes.Remarks := FileTabes.Remarks;
+            TaskVolumes.Remarks := Remarks;
             TaskVolumes.Insert();
             if DocNoE <> '' then begin
                 FileTabes."Author Code" := ReceiverCode;
                 FileTabes.Validate(FileTabes."Author Code");
                 FileTabes."Reciever Mail" := '';
+                FileTabes.Priority := Priority;
+                FileTabes."Receiver Code" := '';
                 FileTabes.Receiver := '';
+                FileTabes."Captured By" := AuthorCode;
                 FileTabes."Task Status" := FileTabes."Task Status"::Forwared;
                 FileTabes."Incoming Date" := Today;
                 FileTabes.Action := '';
                 FileTabes.Remarks := '';
-                FileTabes.Modify();
             end;
+            FileTabes.Modify();
         end;
+    end;
+
+    procedure UpdateStatus(StaffNo: code[40]; LoginStatus: Integer) Status: Boolean
+    var
+        employees: record Employee;
+        LoginRegister: Record "Login Register";
+        NameX: Text;
+    begin
+        NameX := '';
+        NameX := COPYSTR(StaffNo, STRPOS(StaffNo, '\') + 1, STRLEN(StaffNo));
+        LoginRegister.Reset();
+        LoginRegister.SetRange(LoginRegister."Login Name", StaffNo);
+        LoginRegister.SetRange("Login Date", Today);
+        LoginRegister.SetRange(LoginRegister."Login Type", LoginRegister."Login Type"::Login);
+        if LoginRegister.FindFirst() then begin
+            LoginRegister."Logout Time" := Time;
+            LoginRegister."Login Status" := LoginStatus;
+            LoginRegister.Modify();
+        end;
+        employees.Reset();
+        employees.setrange("No.", NameX);
+        if employees.findfirst() then begin
+            Status := true;
+            employees."Login Status" := LoginStatus;
+            employees.Modify();
+        end else begin
+            Status := false;
+        end;
+        Status := false;
+        exit(Status);
     end;
 
     procedure ConfirmLogin(USERNAME: Text; Passcode: Code[40]) Status: Boolean;
@@ -1521,7 +1664,253 @@ codeunit 52186451 "Hr Portal"
     end;
 
 
+    procedure GenerateLoginReport(LoginDate: Date; UserName: Code[40]; Department: Text): Text
+    var
+        //"Login Date", "User ID"
+        BlobOutStream: OutStream;
+        RecRef: RecordRef;
+        BlobInStream: InStream;
+        Base64Convert: Codeunit "Base64 Convert";
+        TempBlob: Codeunit "Temp Blob";
+        FileContentsB64: Text;
+        ResponseObject: JsonObject;
+        filenameFromApp: text;
+        LoginReg: Record "Login Register";
+    begin
 
+        TempBlob.CreateInStream(BlobInStream);
+        TempBlob.CreateOutStream(BlobOutStream, TextEncoding::UTF8);
+        LoginReg.Reset();
+        if UserName <> '' then
+            LoginReg.SetRange(LoginReg."User ID", UserName);
+        if Department <> '' then
+            LoginReg.SetRange(LoginReg."Global Dimension 1 Code", Department);
+        if LoginDate <> 0D then
+            LoginReg.SetRange(LoginReg."Login Date", LoginDate);
+        if LoginReg.Find('-') then begin
+            RecRef.GetTable(LoginReg);
+            Report.SaveAs(Report::"Login Register Report", '', ReportFormat::Pdf, BlobOutStream, RecRef);
+            FileContentsB64 := Base64Convert.ToBase64(BlobInStream);
+            //Message(FileContentsB64);
+            exit(FileContentsB64)
+        end;
+    end;
+    //TaskRe
+    procedure GenerateTaskRegister(IncomingDate: Date; DocumentType: Integer; TaskStatus: Option Open,Forwared,"Archived"," "; Priority: Option Normal,Urgent," "): Text
+    var
+        //"Login Date", "User ID"
+        //"Document Type", "Incoming Date"
+        BlobOutStream: OutStream;
+        RecRef: RecordRef;
+        BlobInStream: InStream;
+        Base64Convert: Codeunit "Base64 Convert";
+        TempBlob: Codeunit "Temp Blob";
+        FileContentsB64: Text;
+        ResponseObject: JsonObject;
+        filenameFromApp: text;
+        LoginReg: Record "Files Table";
+    begin
+
+        TempBlob.CreateInStream(BlobInStream);
+        TempBlob.CreateOutStream(BlobOutStream, TextEncoding::UTF8);
+        LoginReg.Reset();
+        if DocumentType <> 0 then
+            LoginReg.SetRange(LoginReg."Document Type", DocumentType);
+        if IncomingDate <> 0D then
+            LoginReg.SetRange(LoginReg."Incoming Date", IncomingDate);
+        if TaskStatus <> TaskStatus::" " then
+            LoginReg.SetRange(LoginReg."Task Status", TaskStatus);
+        if Priority <> Priority::" " then
+            LoginReg.SetRange(LoginReg.Priority, Priority);
+        if LoginReg.Find('-') then begin
+            RecRef.GetTable(LoginReg);
+            Report.SaveAs(Report::"Task Tracking Report", '', ReportFormat::Pdf, BlobOutStream, RecRef);
+            FileContentsB64 := Base64Convert.ToBase64(BlobInStream);
+            //Message(FileContentsB64);
+            exit(FileContentsB64)
+        end;
+    end;
+    //"PBO Meeting Card Report"
+    procedure GenerateMeetingReport(MeetingDate: Date; Meetingcode: Code[40]): Text
+    var
+        //"Login Date", "User ID"
+        //"Document Type", "Incoming Date"
+        BlobOutStream: OutStream;
+        RecRef: RecordRef;
+        BlobInStream: InStream;
+        Base64Convert: Codeunit "Base64 Convert";
+        TempBlob: Codeunit "Temp Blob";
+        FileContentsB64: Text;
+        ResponseObject: JsonObject;
+        filenameFromApp: text;
+        Meetings: Record "PBO Meetings";
+    begin
+
+        TempBlob.CreateInStream(BlobInStream);
+        TempBlob.CreateOutStream(BlobOutStream, TextEncoding::UTF8);
+        Meetings.Reset();
+        if MeetingDate <> 0D then
+            Meetings.SetRange(Meetings."Meeting Date", MeetingDate);
+        if Meetingcode <> '' then
+            Meetings.SetRange(Meetings."Meeting Code", Meetingcode);
+        if Meetings.Find('-') then begin
+            RecRef.GetTable(Meetings);
+            Report.SaveAs(Report::"PBO Meeting Card Report", '', ReportFormat::Pdf, BlobOutStream, RecRef);
+            FileContentsB64 := Base64Convert.ToBase64(BlobInStream);
+            //Message(FileContentsB64);
+            exit(FileContentsB64)
+        end;
+    end;
+
+    procedure InsertSMSHeader(Message: Text; Usercode: Code[40]; DepartMent: Code[50]; DocNo: code[30]): Code[30]
+    var
+        myInt: Integer;
+        SMSHeader: Record "SMS Header";
+        NameX: Text;
+        MembNoSeries: Record "HR setup";
+        NoSeriesMgt: Codeunit NoSeriesManagement;
+    // DocNo: Code[30];//
+    begin
+        if DocNo = '' then begin
+            MembNoSeries.Get();
+            NameX := '';
+            NameX := COPYSTR(usercode, STRPOS(usercode, '\') + 1, STRLEN(usercode));
+            MembNoSeries.TestField(MembNoSeries."SMS No. Series");
+            DocNo := NoSeriesMgt.GetNextNo(MembNoSeries."SMS No. Series", 0D, True);
+            SMSHeader.Init();
+            SMSHeader.No := DocNo;
+            SMSHeader."Entered By" := usercode;
+            SMSHeader."SMS Type" := SMSHeader."SMS Type"::Other;
+            SMSHeader.Message := Message;
+            SMSHeader."Global Dimension 1 Code" := DepartMent;
+            SMSHeader.Validate(SMSHeader."Global Dimension 1 Code");
+            SMSHeader."Date Entered" := Today;
+            SMSHeader."Time Entered" := Time;
+            SMSHeader.Insert(true);
+        end else begin
+            SMSHeader.Reset();
+            SMSHeader.SetRange(No, DocNo);
+            if SMSHeader.FindFirst() then begin
+                SMSHeader."Entered By" := usercode;
+                SMSHeader."SMS Type" := SMSHeader."SMS Type"::Other;
+                SMSHeader.Message := Message;
+                SMSHeader."Global Dimension 1 Code" := DepartMent;
+                SMSHeader.Validate(SMSHeader."Global Dimension 1 Code");
+                SMSHeader."Date Entered" := Today;
+                SMSHeader."Time Entered" := Time;
+                SMSHeader.Modify();
+            end;
+
+        end;
+        if DocNo <> '' then
+            exit(DocNo)
+        else
+            exit(SMSHeader.No);
+    end;
+
+    procedure SendBulkSms(DocNo: Code[40]; SendAs: Integer)
+    var
+        myInt: Integer;
+        CustomerRec: Record Employee;
+        GreenSmsLines: Record "SMS Lines";
+        LineN: Integer;
+        BulkHeader: Record "Sms Header";
+        SureFactory: Codeunit "Hr Portal";
+        BulkLines: Record "Sms Lines";
+        Vend: Record Employee;
+        MessageTyp: Enum "Message Type";
+    begin
+        MessageTyp := MessageTyp::Other;
+        BulkHeader.Reset();
+        BulkHeader.SetRange(No, DocNo);
+        if BulkHeader.FindFirst() then begin
+            if SendAs = 1 then begin
+                BulkLines.Reset;
+                BulkLines.SetRange("Sms sent", false);
+                BulkLines.SetRange(BulkLines.No, BulkHeader.No);
+                if BulkLines.FindSet() then begin
+                    repeat
+                        Vend.Reset;
+                        Vend.SetRange(Vend."No.", BulkLines."Client No");
+                        if Vend.Find('-') then begin
+                            SureFactory.SendPboComSMS(BulkLines."Phone No", BulkHeader.Message, BulkLines."Client No", MessageTyp);
+                            BulkLines."Sms sent" := true;
+                            BulkLines.Modify();
+                        end;
+                    until BulkLines.Next = 0;
+                end;
+            end;
+            if SendAs = 2 then begin
+                GreenSmsLines.Reset();
+                GreenSmsLines.SetRange(No, BulkHeader.No);
+                if GreenSmsLines.FindSet() then
+                    GreenSmsLines.DeleteAll();
+                CustomerRec.Reset();
+                CustomerRec.SetFilter("Phone No.", '<>%1', '');
+                //CustomerRec.SetRange(CustomerRec."Global Dimension 1 Code", rec."Global Dimension 1 Code");
+                if CustomerRec.FindSet() then begin
+                    repeat
+                        LineN := 0;
+                        GreenSmsLines.Reset();
+                        if GreenSmsLines.FindSet() then
+                            LineN := GreenSmsLines.Count;
+                        GreenSmsLines.Init();
+                        GreenSmsLines."Client No" := CustomerRec."No.";
+                        GreenSmsLines.No := BulkHeader.No;
+                        GreenSmsLines."entry No" := LineN + 1;
+                        GreenSmsLines.Validate(GreenSmsLines."Client No");
+                        GreenSmsLines."Phone No" := CustomerRec."Phone No.";
+                        SureFactory.SendPboComSMS(GreenSmsLines."Phone No", BulkHeader.Message, '', MessageTyp);
+                        GreenSmsLines.Insert();
+                    until CustomerRec.Next() = 0;
+                end;
+                BulkLines.Reset();
+                BulkLines.SetRange(No, DocNo);
+                if BulkLines.FindSet() then begin
+                    repeat
+                        BulkLines."Sms sent" := true;
+                        BulkLines.Modify();
+                    until BulkLines.Next() = 0;
+                end;
+                // Vend.Reset;
+                // Vend.SetRange(Status, Vend.Status::Active);
+                // Vend.SetFilter("Phone No.", '<>%1', '');
+                // if Vend.FindSet() then begin
+                //     repeat
+                //         SureFactory.SendPboComSMS(Vend."Phone No.", BulkHeader.Message, '', MessageTyp);
+                //     until Vend.Next() = 0;
+                // end;
+            end;
+            BulkHeader.Status := BulkHeader.Status::Approved;
+            BulkHeader."SMS Status" := BulkHeader."SMS Status"::Sent;
+            BulkHeader.Modify();
+        end;
+
+    end;
+
+    procedure InsertSMSLines(DocNo: Code[30]; Depart: Code[40]; EmployCode: Code[40])
+    var
+
+        myInt: Integer;
+        CustomerRec: Record Employee;
+        GreenSmsLines: Record "SMS Lines";
+        LineN: Integer;
+    begin
+
+        LineN := 0;
+        GreenSmsLines.Reset();
+        if GreenSmsLines.FindSet() then
+            LineN := GreenSmsLines.Count;
+        GreenSmsLines.Init();
+        GreenSmsLines."Client No" := CustomerRec."No.";
+        GreenSmsLines.No := DocNo;
+        GreenSmsLines."entry No" := LineN + 1;
+        GreenSmsLines."Client No" := EmployCode;
+        GreenSmsLines.Validate(GreenSmsLines."Client No");
+        // GreenSmsLines."Phone No" := CustomerRec."Phone No.";
+        GreenSmsLines.Insert();
+
+    end;
 
     procedure CreatePortalUser(Name: Text; NewPasswrd: Code[20]) status: Boolean
     var
@@ -1660,14 +2049,14 @@ codeunit 52186451 "Hr Portal"
                             AccName := Employee."Middle Name";
                         if GenSetUp."Allow Send SMS" then begin
                             if Employee."Phone No." <> '' then begin //Check if the mobile phone No is not blank but dont return an error
-                                msg := 'Dear ' + AccName + ', you have  been Selected to be a Executive Commitee Of meeting no. ' + ' ' + MeetingCode + ' ' + 'and the meeting date is ' + Format(PBOMEetings."Meeting Date") + ' ' + 'Kindly for Further Information Contact the Head department. Thank you.';
-                                SureFactory.SendPboComSMS(Employee."Phone No.", msg, Employee."No.", MessageTY);
+                                msg := 'Dear ' + AccName + ', you have  been Selected to be a  Commitee member Of meeting no. ' + ' ' + MeetingCode + ' ' + 'and the meeting date is ' + Format(PBOMEetings."Meeting Date") + ', Time ' + format(PBOMEetings."Meeting Time") + ' ' + '.MEETING SUMMARY: ';
+                                SureFactory.SendPboComSMS(Employee."Phone No.", msg + ',' + PBOMEetings."Meeting Summary", Employee."No.", MessageTY);
                             end;
                         end;
                         if GenSetUp."Notify Vie Mail" then begin
 
                             msg := 'Dear ' + AccName + ', you have  been Selected to be a Executive Commitee Of meeting no. ' + ' ' + MeetingCode + ' ' + 'and the meeting date is ' + Format(PBOMEetings."Meeting Date") + ' ' + 'Kindly for Further Information Contact the Head department. Thank you.';
-                            EmailManager.Create(HRDiscipMemb.Email, 'Commitee Notifications', msg, true);
+                            EmailManager.Create(HRDiscipMemb.Email, 'PBO Notifications', PBOMEetings."Meeting Summary", true);
                             Email.Send(EmailManager, Enum::"Email Scenario"::Default);
                         end;
                     end;

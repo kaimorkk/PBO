@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 
 
-page 52186431 "Task Locations List"
+page 50006 "Task Locations List"
 {
     Caption = 'Task Locations List';
     PageType = List;

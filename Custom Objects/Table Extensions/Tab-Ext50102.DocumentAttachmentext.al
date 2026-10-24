@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 using Microsoft.Foundation.Attachment;
 
-tableextension 52186450 "Document Attachment ext" extends "Document Attachment"
+tableextension 50002 "Document Attachment ext" extends "Document Attachment"
 {
     fields
     {
@@ -16,6 +16,10 @@ tableextension 52186450 "Document Attachment ext" extends "Document Attachment"
             DataClassification = ToBeClassified;
         }
         field(50102; Description; Text[250])
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(50103; Version; Text[20])
         {
             DataClassification = ToBeClassified;
         }

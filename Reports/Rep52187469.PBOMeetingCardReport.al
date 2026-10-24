@@ -1,4 +1,4 @@
-report 52185426 "PBO Meeting Card Report"
+report 52193426 "PBO Meeting Card Report"
 {
     Caption = 'PBO Meeting Card Report';
     ApplicationArea = All;
@@ -12,6 +12,9 @@ report 52185426 "PBO Meeting Card Report"
         {
             RequestFilterFields = "Meeting Code", "Meeting Date";
             column(Meeting_Code; "Meeting Code") { }
+            column(CompanyInfo_Picture; CompanyInfo.Picture) { }
+            column(COMPANYNAME; CompanyInfo.Name) { }
+            column(Address; CompanyInfo.Address) { }
             column(Meeting_Summary; "Meeting Summary") { }
             column(Meeting_Date; "Meeting Date") { }
             column(Meeting_Status; "Meeting Status") { }
@@ -22,15 +25,35 @@ report 52185426 "PBO Meeting Card Report"
             column(Brown_Bag; "Brown-Bag") { }
             column(Department; Department) { }
 
-            dataitem(MeetingTask; "Meeting Task")
+
+            dataitem(CommitteeCubMembers; "Committee Cub Members")
             {
                 DataItemLink = "Commitee Code" = field("Meeting Code");
-                column(Employee_No; "Employee No") { }
-                column(Names; Names) { }
-                column(Task; Task) { }
-                column(Email; Email) { }
-                column(Phone_Number; "Phone Number") { }
+                column(Employee_No; "Employee No")
+                {
+
+                }
+                column(Role; Role)
+                {
+
+                }
+                column(Phone_Number; "Phone Number")
+                {
+
+                }
+
             }
         }
     }
+    trigger OnPreReport()
+    var
+        myInt: Integer;
+    begin
+        CompanyInfo.get;
+        CompanyInfo.CalcFields(Picture);
+
+    end;
+
+    var
+        CompanyInfo: Record "Company Information";
 }

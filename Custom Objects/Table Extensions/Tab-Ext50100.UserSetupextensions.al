@@ -5,7 +5,7 @@ using Microsoft.Finance.Dimension;
 using Microsoft.Inventory.Location;
 using Microsoft.HumanResources.Employee;
 
-tableextension 52186447 "User Setup extensions" extends "User Setup"
+tableextension 50000 "User Setup extensions" extends "User Setup"
 {
     fields
     {

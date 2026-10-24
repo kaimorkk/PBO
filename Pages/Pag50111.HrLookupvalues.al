@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 
 
-page 52186432 "HR Lookup Values List"
+page 50007 "HR Lookup Values List"
 {
     ApplicationArea = Basic;
     CardPageId = "HR Lookup Values Card";

@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 using Microsoft.HumanResources.Employee;
 
-tableextension 52186449 "Ext Employee" extends Employee
+tableextension 50003 "Ext Employee" extends Employee
 {
     fields
     {

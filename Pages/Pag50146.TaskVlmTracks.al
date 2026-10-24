@@ -1,7 +1,7 @@
 namespace PBO.PBO;
 using System.Security.User;
 
-page 52186443 "Task Vlm Tracks"
+page 50014 "Task Vlm Tracks"
 {
     ApplicationArea = All;
     Caption = 'Task Volume Tracking';
@@ -27,6 +27,7 @@ page 52186443 "Task Vlm Tracks"
                     Editable = false;
 
                 }
+
                 field("File Type"; Rec."File Type")
                 {
                     ToolTip = 'Specifies the value of the File Type field.';
@@ -118,9 +119,11 @@ page 52186443 "Task Vlm Tracks"
         UserSet: Record "User Setup";
     begin
         if UserSet.Get(UserId) then begin
-            rec.FilterGroup(2);
-            rec.SetFilter(rec."Author Code", UserSet."Staff No");
-            rec.FilterGroup(0);
+            IF UserSet.HOD = false then begin
+                rec.FilterGroup(2);
+                rec.SetFilter(rec."Author Code", UserSet."Staff No");
+                rec.FilterGroup(0);
+            end;
         end;
     end;
 }

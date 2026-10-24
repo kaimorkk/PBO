@@ -1,7 +1,7 @@
 namespace PBO.PBO;
 
 
-page 52186429 "Task Stations"
+page 50004 "Task Stations"
 {
     PageType = List;
     SourceTable = "Task Stations";

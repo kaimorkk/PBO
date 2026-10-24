@@ -1,7 +1,7 @@
 namespace PBO.PBO;
 
 
-enum 52185425 "File Types"
+enum 50000 "File Types"
 {
     Extensible = true;
     value(0; "")
@@ -25,7 +25,7 @@ enum 52185425 "File Types"
         Caption = 'Incoming Legislative Proposals';
     }
 
-    value(11; "Other Tasks")
+    value(5; "Other Tasks")
     {
         Caption = 'Other Tasks';
     }

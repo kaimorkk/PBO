@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 using Microsoft.Purchases.Vendor;
 
-tableextension 52186448 "Vendor Extenstions" extends Vendor
+tableextension 50001 "Vendor Extenstions" extends Vendor
 {
     fields
     {

@@ -1,6 +1,6 @@
 namespace PBO.PBO;
 
-page 52186444 "Portal Users"
+page 50016 "Portal Users"
 {
     ApplicationArea = All;
     Caption = 'Portal Users';

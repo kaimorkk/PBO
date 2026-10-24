@@ -1,7 +1,7 @@
 namespace PBO.PBO;
 
 
-page 52186428 "Task Volumes List"
+page 50003 "Task Volumes List"
 {
     ApplicationArea = All;
     Caption = 'Task Volumes List';
@@ -51,6 +51,10 @@ page 52186428 "Task Volumes List"
                     Caption = 'Volume';
                     Visible = false;
                     ToolTip = 'Specifies the value of the Batch No. field.';
+                }
+                field("Sector/Category"; "Sector/Category")
+                {
+                    ApplicationArea = all;
                 }
                 // field("Archived By"; Rec."Archived By")
                 // {
@@ -111,6 +115,18 @@ page 52186428 "Task Volumes List"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the value of the Year of Closure field.';
+                }
+                field("Due Date"; "Due Date")
+                {
+                    ApplicationArea = all;
+                }
+                field("Task Volume"; "Task Volume")
+                {
+                    ApplicationArea = all;
+                }
+                field(Forwarded; Forwarded)
+                {
+                    ApplicationArea = all;
                 }
             }
         }

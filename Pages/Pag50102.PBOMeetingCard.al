@@ -8,7 +8,7 @@ using Microsoft.Foundation.Attachment;
 
 
 
-page 52186426 "PBO Meeting Card"
+page 50001 "PBO Meeting Card"
 {
     ApplicationArea = All;
     Caption = 'Meeting Card';
@@ -264,6 +264,7 @@ page 52186426 "PBO Meeting Card"
                     PromotedCategory = Category5;
                     PromotedIsBig = true;
                     // Visible = false;
+
                     trigger OnAction()
                     var
                         myInt: Integer;
@@ -272,8 +273,33 @@ page 52186426 "PBO Meeting Card"
                         Name: Text;
                         "PV Type": Text;
                         "Payment Type": Text;
+                        FormattedName: Text;
+                        RawName: Text;
+                        TaskD: DateFormula;
+                        startDate: Date;
+                        endDate: Date;
+                        LoginRegister: Record "Login Register";
+                        DomainUser: Text;
+                        Numberofdays: Integer;
+                        Testb: TextBuilder;
                     begin
-                        Hrportal.GeneratePortalEmailOTPCode('greencom\MASTER.FELIX');          // Name := 'kkaimor\sharks.kk';
+                        // For mattedName := 'KELVIN';
+                        // Name := StrSubstNo('%1\%2', 'PBOBCS1', FormattedName.Trim());
+                        // Message('RawName=[%1]', FormattedName);
+
+
+                        // startDate := Today;
+                        // endDate := CalcDate('5D', startDate);
+                        // Numberofdays := endDate - startDate;
+                        // Evaluate(TaskD, Format(Numberofdays) + 'D');
+                        // Message('Task Duration is %1', TaskD);
+
+
+                        // RawName := 'ZawADI kemboi';
+                        // FormattedName := LowerCase(RawName);
+                        // FormattedName[1] := UpperCase(CopyStr(FormattedName, 1, 1)) [1];
+                        // Message(FormattedName);
+                        // Hrportal.GeneratePortalEmailOTPCode('greencom\MASTER.FELIX');          // Name := 'kkaimor\sharks.kk';
                         // Name := COPYSTR(Name, STRPOS(Name, '\') + 1, STRLEN(Name));
                         // MESSAGE(Name);
                         // "PV Type" := 'oops';
@@ -283,7 +309,7 @@ page 52186426 "PBO Meeting Card"
                         //Hrportal.CreatePortalUser('PBOBCS1\BENJAMIN.NGIMOR', 'MT0001');
                         //Hrportal.SendPboComSMS('0721744684', 'Test321', '5473', meesg::"Meeting Notification");
                         // Hrportal.CreatFilesTask('EH', '4342', Today, 'ADM', 'EH', 'TRES', '43R3EW', 2);
-                        Message('Done');
+                        // Message('Done');
                     end;
                 }
             }

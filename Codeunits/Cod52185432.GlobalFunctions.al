@@ -1,5 +1,5 @@
 namespace PBO.PBO;
-codeunit 52185432 "Global Functions"
+codeunit 50001 "Global Functions"
 {
     trigger OnRun()
     begin

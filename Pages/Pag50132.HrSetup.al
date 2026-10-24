@@ -1,6 +1,6 @@
 namespace PBO.PBO;
 
-page 52186435 "Hr Setup"
+page 50009 "Hr Setup"
 {
     ApplicationArea = All;
     Caption = 'Hr Setup';
@@ -115,6 +115,11 @@ page 52186435 "Hr Setup"
                 field("OTP Timeout"; "OTP Timeout")
                 {
                     ApplicationArea = all;
+                }
+                field("SMS No. Series"; "SMS No. Series")
+                {
+                    ApplicationArea = all;
+                    Caption = 'SMS No.';
                 }
             }
         }

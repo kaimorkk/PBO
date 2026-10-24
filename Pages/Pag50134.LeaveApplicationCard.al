@@ -6,7 +6,7 @@ using System.Utilities;
 using System.Automation;
 
 
-page 52186437 "HR Leave Application Card"
+page 50010 "HR Leave Application Card"
 {
     DeleteAllowed = false;
     PageType = Card;
@@ -144,48 +144,12 @@ page 52186437 "HR Leave Application Card"
                     ShowMandatory = true;
                     ToolTip = 'Specifies the value of the Start Date field.';
                 }
-                field("Days Applied"; Rec."Days Applied")
+                field("End Date"; "End Date")
                 {
-                    ApplicationArea = Basic;
-                    Importance = Promoted;
-                    ShowMandatory = true;
-                    ToolTip = 'Specifies the value of the Days Applied field.';
-                    trigger OnValidate()
-                    begin
-                        HREmp.RESET;
-                        HREmp.SETRANGE("No.", "Employee No");
-                        IF HREmp.FIND('-') THEN BEGIN
-                            // rec.Acting := HREmp.Acting;
-                            // rec."Position Acting" := HREmp."Job Title5";
-                            // rec."Department acting" := HREmp."Department acting";
-                            // rec."DEpartment acting Name" := HREmp."Department acting Name";
-                        end;
-                        HREmp.Get(Rec."Employee No");
-                        if Rec."Leave Type" = 'ANNUAL' then begin
-                            if Rec."Days Applied" > dLeft then
-                                Message('Days applied cannot exceed leave balance for this leave');
-                        end else begin
-                            HRLeaveTypes.Reset();
-                            HRLeaveTypes.SetRange(HRLeaveTypes.Code, Rec."Leave Type");
-                            if HRLeaveTypes.Find('-') then
-                                if Rec."Days Applied" > HRLeaveTypes.Days then
-                                    Error('Days applied cannot exceed leave balance for this leave');
+                    ApplicationArea = all;
+                }
 
-                        end;
-                    end;
-                }
-                field("Return Date"; Rec."Return Date")
-                {
-                    ApplicationArea = Basic;
-                    Editable = false;
-                    ToolTip = 'Specifies the value of the Return Date field.';
-                }
-                label("***")
-                {
-                    ApplicationArea = Basic;
-                    Caption = '*';
-                    Visible = false;
-                }
+
                 field(dAlloc; dAlloc)
                 {
                     ApplicationArea = Basic;
@@ -370,6 +334,7 @@ page 52186437 "HR Leave Application Card"
             group("Workflow process")
             {
                 Caption = 'Workflow process';
+                Visible = false;
 
                 action(SendApprovalRequest)
                 {

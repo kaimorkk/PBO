@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 using Microsoft.Foundation.Attachment;
 
-pageextension 52186446 """Document Attachment Ext """ extends "Document Attachment Details"
+pageextension 50001 "Document Attachment Ext " extends "Document Attachment Details"
 {
     layout
     {
@@ -22,6 +22,10 @@ pageextension 52186446 """Document Attachment Ext """ extends "Document Attachme
                 ApplicationArea = all;
             }
             field("Date Received"; "Date Received")
+            {
+                ApplicationArea = all;
+            }
+            field(Version; Version)
             {
                 ApplicationArea = all;
             }

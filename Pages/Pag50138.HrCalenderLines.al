@@ -1,7 +1,7 @@
 namespace PBO.PBO;
 
 
-page 52186440 "HR Calendar Lines"
+page 50012 "HR Calendar Lines"
 {
     PageType = ListPart;
     SourceTable = "HR Calendar List";

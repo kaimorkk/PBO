@@ -1,4 +1,4 @@
-report 52185425 "Login Register Report"
+report 52193425 "Login Register Report"
 {
     Caption = 'Login Register Report';
     ApplicationArea = All;
@@ -14,6 +14,9 @@ report 52185425 "Login Register Report"
             DataItemTableView = sorting("Login Date");
 
             column(Entry_No_; "Entry No.") { }
+            column(Department; Department)
+            { }
+
             column(User_ID; "User ID") { }
             column(LoginDate; "Login Date") { }
             column(Login_Time; "Login Time") { }
@@ -49,14 +52,23 @@ report 52185425 "Login Register Report"
             {
 
             }
+            column(Login_Name; "Login Name")
+            {
+
+            }
             trigger OnAfterGetRecord()
             var
                 myInt: Integer;
+                hrEmployee: Record Employee;
             begin
                 LoginDate := '';
+                Department := '';
                 if "Login Date" <> 0D then
                     LoginDate := GlobalFunc.FormatDate("Login Date");
-
+                hrEmployee.Reset();
+                hrEmployee.SetRange("No.", LoginRegister."Login Name");
+                if hrEmployee.FindFirst() then
+                    Department := hrEmployee."Global Dimension 1 Code";
 
             end;
         }
@@ -79,6 +91,7 @@ report 52185425 "Login Register Report"
         CompInfo: Record "Company Information";
         CompanyAdre: Text;
         CompnayName: Text;
+        Department: Text;
         CompPhone: Text;
         EndDAteCon: Text;
         Compmail: Text;

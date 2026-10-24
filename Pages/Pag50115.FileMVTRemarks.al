@@ -1,7 +1,7 @@
 namespace PBO.PBO;
 
 
-page 52186436 "Task MVT Remarks"
+page 50008 "Task MVT Remarks"
 {
     CardPageID = "Task MVT Remarks Card";
     PageType = List;

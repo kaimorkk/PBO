@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 using System.Security.User;
 
-pageextension 52186445 "Extends User setup" extends "User Setup"
+pageextension 50000 "Extends User setup" extends "User Setup"
 {
     layout
     {

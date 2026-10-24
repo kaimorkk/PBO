@@ -2,7 +2,7 @@ namespace PBO.PBO;
 
 
 
-page 52186438 "HR Leave Ledger Entries"
+page 50011 "HR Leave Ledger Entries"
 {
     Caption = 'Hr Leave Ledger Entries';
     DataCaptionFields = "Leave Calendar Code";

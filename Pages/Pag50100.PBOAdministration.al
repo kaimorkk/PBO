@@ -3,7 +3,7 @@ using System.Automation;
 using Microsoft.HumanResources.Employee;
 using System.Security.User;
 
-page 52186425 "PBO Administration"
+page 50000 "PBO Administration"
 {
     ApplicationArea = All;
     Caption = 'PBO Administration';
@@ -30,6 +30,18 @@ page 52186425 "PBO Administration"
             {
                 ApplicationArea = all;
                 RunObject = report "Login Register Report";
+            }
+            action("Task Tracking Report")
+            {
+                ApplicationArea = all;
+                RunObject = report "Task Tracking Report";
+
+            }
+            action("PBO Meeting Card Report")
+            {
+                ApplicationArea = all;
+                RunObject = report "PBO Meeting Card Report";
+
             }
 
         }
@@ -78,6 +90,122 @@ page 52186425 "PBO Administration"
                     ToolTip = 'Executes the Failled PBO Meetings action.';
                 }
             }
+            group(perfomanceAppraisal)
+            {
+                Caption = 'Performance Appraisal';
+                action("Perf Corp. Workplan List")
+                {
+                    ApplicationArea = all;
+                    RunObject = page "Perf Corp. Workplan List";
+                    Caption = 'Corporate Annual Workplans';
+                }
+                action("Perf Goal Header List")
+                {
+                    ApplicationArea = all;
+                    RunObject = page "Perf Goal Header List";
+                    Caption = 'Individual Performance Goals';
+                }
+
+                action("Perf Mitigating Factor List")
+                {
+                    ApplicationArea = all;
+                    RunObject = page "Perf Migating Factor List St.";
+                    Caption = 'Mitigating Factors';
+                }
+                action("Perf Review Header List")
+                {
+                    ApplicationArea = all;
+                    RunObject = page "Perf Review Header List";
+                    Caption = 'Performance Reviews';
+                }
+
+                action("Perf Reward Sanction List St.")
+                {
+                    ApplicationArea = all;
+                    Caption = 'Rewards and Sanctions';
+                    RunObject = page "Perf Reward Sanction List St.";
+                }
+                group("Appraisal Reports")
+                {
+                    Caption = 'Appraisal Reports';
+                    action("Perf Appraisal Status Report")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Appraisal Status Report';
+                        RunObject = report "Perf Appraisal Status Report";
+                    }
+                    action("Perf Appraisal Coverage Rprt")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Staff Appraisal Coverage Report';
+                        RunObject = report "Perf Appraisal Coverage Rprt";
+                    }
+                    action("Perf Target Setting Report")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Target Setting Report';
+                        RunObject = report "Perf Target Setting Report";
+                    }
+                    action("Perf Periodic Evaluation Rprt")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Periodic Evaluation Report';
+                        RunObject = report "Perf Periodic Evaluation Rprt";
+                    }
+                    action("Perf Score Report")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Performance Score Report';
+                        RunObject = report "Perf Score Report";
+                    }
+                    action("Perf Employee Performance Rprt")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Employee Performance Report';
+                        RunObject = report "Perf Employee Performance Rprt";
+                    }
+                    action("Perf Competency Analysis Rprt")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Competency Analysis Report';
+                        RunObject = report "Perf Competency Analysis Rprt";
+                    }
+                    action("Perf Training Needs Report")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Training Needs Report';
+                        RunObject = report "Perf Training Needs Report";
+                    }
+                    action("Perf Rewards Sanctions Report")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Rewards and Sanctions Report';
+                        RunObject = report "Perf Rewards Sanctions Report";
+                    }
+                }
+                group("Appraisal Setups")
+                {
+                    Caption = 'Appraisal Setups';
+                    action("Perf Setup Card")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Performance Appraisal Setup';
+                        RunObject = page "Perf Setup Card";
+                    }
+                    action("Perf Appraisal Period List")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Appraisal Periods';
+                        RunObject = page "Perf Appraisal Period List";
+                    }
+                    action("Perf Rating Scale")
+                    {
+                        ApplicationArea = all;
+                        Caption = 'Performance Rating Scale';
+                        RunObject = page "Perf Rating Scale";
+                    }
+                }
+            }
             group("Task Management")
             {
                 group("Tasks")
@@ -109,7 +237,9 @@ page 52186425 "PBO Administration"
                     {
                         ApplicationArea = Basic, Suite;
                         Caption = 'Track Forwarded Task';
-                        RunObject = page "Task Vlm Tracks";
+                        RunObject = page "Track Forward List";
+                        RunPageLink = "Task Status" = filter(Forwared);
+
                     }
                     action("Task Locations")
                     {
@@ -316,8 +446,13 @@ page 52186425 "PBO Administration"
                 action("All Employees")
                 {
                     ApplicationArea = all;
-                    RunObject = page "Employee List";
-                    Caption = 'Employee List';
+                    RunObject = page "PBO Staff List";
+                    Caption = 'PBO Staff List';
+                }
+                action("Leave Management")
+                {
+                    ApplicationArea = all;
+                    RunObject = page "HR Leave Applications List";
                 }
             }
             group(Setups)
@@ -351,6 +486,12 @@ page 52186425 "PBO Administration"
                     ApplicationArea = all;
                     RunObject = page "SMS Messages";
                     Caption = 'Sms Messages';
+                }
+                action("Bulk SMS")
+                {
+                    ApplicationArea = all;
+                    RunObject = page "PBO Sms List";
+                    Caption = 'PBO Sms List';
                 }
             }
         }

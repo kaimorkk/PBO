@@ -1,7 +1,7 @@
 namespace PBO.PBO;
 
 
-page 52186441 "Login Register List"
+page 50013 "Login Register List"
 {
     PageType = List;
     ApplicationArea = All;
@@ -53,6 +53,20 @@ page 52186441 "Login Register List"
                 {
                     ApplicationArea = all;
                     Visible = false;
+                }
+                field("Logout Time"; Rec."Logout Time")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the logout time.';
+                }
+                field("Login Status"; Rec."Login Status")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the login status.';
+                }
+                field("Login Name"; "Login Name")
+                {
+                    ApplicationArea = all;
                 }
             }
         }
