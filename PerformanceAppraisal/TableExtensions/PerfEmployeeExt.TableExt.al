@@ -35,5 +35,10 @@ tableextension 52193423 "Perf Employee Ext" extends Employee
             Caption = 'Grade';
             DataClassification = CustomerContent;
         }
+        field(50106; "Perf Is Head of Directorate"; Boolean)
+        {
+            Caption = 'Is Head of Directorate';
+            DataClassification = CustomerContent;
+        }
     }
 }

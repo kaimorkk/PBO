@@ -12,6 +12,7 @@ pageextension 52193423 "Perf Employee Card Ext" extends "Employee Card"
                 field("Perf Region Code"; Rec."Perf Region Code") { ApplicationArea = All; }
                 field("Perf Grade"; Rec."Perf Grade") { ApplicationArea = All; }
                 field("Perf Is HOD"; Rec."Perf Is HOD") { ApplicationArea = All; }
+                field("Perf Is Head of Directorate"; Rec."Perf Is Head of Directorate") { ApplicationArea = All; }
                 field("Perf Is CEO"; Rec."Perf Is CEO") { ApplicationArea = All; }
                 field("Perf User ID"; Rec."User ID")
                 {

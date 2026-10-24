@@ -89,8 +89,7 @@ page 52193462 "Perf Corp. Workplan Card"
 
                 trigger OnAction()
                 begin
-                    Rec.CascadeToDirectorates();
-                    Message(CascadedDirMsg);
+                    Message(CascadedDirMsg, Rec.CascadeToDirectorates());
                 end;
             }
             action(CascadeToDepartments)
@@ -102,8 +101,7 @@ page 52193462 "Perf Corp. Workplan Card"
 
                 trigger OnAction()
                 begin
-                    Rec.CascadeToDepartments();
-                    Message(CascadedDeptMsg);
+                    Message(CascadedDeptMsg, Rec.CascadeToDepartments());
                 end;
             }
             action(ReturnForRevision)
@@ -149,6 +147,6 @@ page 52193462 "Perf Corp. Workplan Card"
 
     var
         IsOpen: Boolean;
-        CascadedDirMsg: Label 'Workplan objectives have been cascaded to Heads of Directorates. Directorate-level targets can now be linked to this workplan.';
-        CascadedDeptMsg: Label 'Workplan objectives have been cascaded to Heads of Departments. Staff can now link individual targets to this workplan.';
+        CascadedDirMsg: Label 'Workplan objectives have been cascaded to Heads of Directorates and %1 directorate goal document(s) were created. Directorate-level targets can now be linked to this workplan.', Comment = '%1 = number of documents';
+        CascadedDeptMsg: Label 'Workplan objectives have been cascaded to Heads of Departments and %1 department goal document(s) were created. Staff can now link individual targets to this workplan.', Comment = '%1 = number of documents';
 }

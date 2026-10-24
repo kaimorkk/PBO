@@ -125,9 +125,15 @@ table 52193473 "Perf Corporate Workplan"
         Modify(true);
     end;
 
-    procedure CascadeToDirectorates()
+    /// <summary>
+    /// Flags the objectives as cascaded and creates one Directorate-level goal document per
+    /// Responsible Directorate, prefilled with that directorate's objectives. Returns the
+    /// number of directorate documents created.
+    /// </summary>
+    procedure CascadeToDirectorates() DocsCreated: Integer
     var
         WorkplanLine: Record "Perf Corporate Workplan Line";
+        GoalHeader: Record "Perf Goal Header";
     begin
         TestField(Status, Status::Approved);
         WorkplanLine.SetRange("Workplan No.", "No.");
@@ -139,11 +145,26 @@ table 52193473 "Perf Corporate Workplan"
         WorkplanLine.ModifyAll("Cascaded to Directorate", true);
         Status := Status::"Cascaded to Directorates";
         Modify(true);
+
+        WorkplanLine.SetCurrentKey("Workplan No.", "Line No.");
+        if WorkplanLine.FindSet() then
+            repeat
+                if not GoalDocExists(GoalHeader.Level::Directorate, WorkplanLine."Responsible Directorate") then begin
+                    CreateGoalDoc(GoalHeader.Level::Directorate, '', WorkplanLine."Responsible Directorate", true);
+                    DocsCreated += 1;
+                end;
+            until WorkplanLine.Next() = 0;
     end;
 
-    procedure CascadeToDepartments()
+    /// <summary>
+    /// Flags the objectives as cascaded and creates one Department-level goal document per
+    /// Responsible Department, prefilled with that department's objectives. Returns the
+    /// number of department documents created.
+    /// </summary>
+    procedure CascadeToDepartments() DocsCreated: Integer
     var
         WorkplanLine: Record "Perf Corporate Workplan Line";
+        GoalHeader: Record "Perf Goal Header";
     begin
         TestField(Status, Status::"Cascaded to Directorates");
         // Objectives without a Responsible Department stay at directorate level only.
@@ -155,6 +176,92 @@ table 52193473 "Perf Corporate Workplan"
         WorkplanLine.ModifyAll("Cascaded to Dept.", true);
         Status := Status::"Cascaded to Departments";
         Modify(true);
+
+        WorkplanLine.SetCurrentKey("Workplan No.", "Line No.");
+        if WorkplanLine.FindSet() then
+            repeat
+                if not GoalDocExists(GoalHeader.Level::Department, WorkplanLine."Responsible Department") then begin
+                    CreateGoalDoc(GoalHeader.Level::Department, WorkplanLine."Responsible Department", WorkplanLine."Responsible Directorate", true);
+                    DocsCreated += 1;
+                end;
+            until WorkplanLine.Next() = 0;
+    end;
+
+    local procedure GoalDocExists(Level: Enum "Perf Goal Level"; OrgUnitCode: Code[20]): Boolean
+    var
+        GoalHeader: Record "Perf Goal Header";
+    begin
+        GoalHeader.SetRange("Workplan No.", "No.");
+        GoalHeader.SetRange(Level, Level);
+        if Level = Level::Directorate then
+            GoalHeader.SetRange("Directorate Code", OrgUnitCode)
+        else
+            GoalHeader.SetRange("Department Code", OrgUnitCode);
+        exit(not GoalHeader.IsEmpty());
+    end;
+
+    local procedure CreateGoalDoc(Level: Enum "Perf Goal Level"; DepartmentCode: Code[20]; DirectorateCode: Code[20]; Depmetnes: Boolean)
+    var
+        GoalHeader: Record "Perf Goal Header";
+        GoalLine: Record "Perf Goal Line";
+        WorkplanLine: Record "Perf Corporate Workplan Line";
+        Period: Record "Perf Appraisal Period";
+        Head: Record Employee;
+    begin
+        GoalHeader.Init();
+        GoalHeader.Level := Level;
+        GoalHeader."Department WP" := Depmetnes;
+        GoalHeader."Directorates WP" := Depmetnes;
+        GoalHeader."Department Code" := DepartmentCode;
+        GoalHeader."Directorate Code" := DirectorateCode;
+        GoalHeader."Workplan No." := "No.";
+        GoalHeader."Performance Contract Ref." := "Performance Contract Ref.";
+        GoalHeader."Strategic Plan Reference" := "Strategic Plan Reference";
+        // The document is owned by the Head of Directorate/Department, if one is set up.
+        if Level = Level::Directorate then begin
+            Head.SetRange("Perf Directorate Code", DirectorateCode);
+            Head.SetRange("Perf Is Head of Directorate", true);
+        end else begin
+            Head.SetRange("Global Dimension 1 Code", DepartmentCode);
+            Head.SetRange("Perf Is HOD", true);
+        end;
+        if Head.FindFirst() then begin
+            GoalHeader."Employee No." := Head."No.";
+            GoalHeader."Employee Name" := CopyStr(Head.FullName(), 1, MaxStrLen(GoalHeader."Employee Name"));
+            GoalHeader."Supervisor No." := Head."Perf Supervisor No.";
+        end;
+        Period.SetRange(Closed, false);
+        Period.SetFilter("Start Date", '<=%1', "Start Date");
+        Period.SetFilter("End Date", '>=%1', "Start Date");
+        if ("Start Date" <> 0D) and Period.FindFirst() then begin
+            GoalHeader."Period Code" := Period.Code;
+            GoalHeader."Start Date" := Period."Start Date";
+            GoalHeader."End Date" := Period."End Date";
+        end else begin
+            GoalHeader."Start Date" := "Start Date";
+            GoalHeader."End Date" := "End Date";
+        end;
+        GoalHeader.Insert(true);
+
+        WorkplanLine.SetRange("Workplan No.", "No.");
+        if Level = Level::Directorate then
+            WorkplanLine.SetRange("Responsible Directorate", DirectorateCode)
+        else
+            WorkplanLine.SetRange("Responsible Department", DepartmentCode);
+        if WorkplanLine.FindSet() then
+            repeat
+                GoalLine.Init();
+                GoalLine."Goal No." := GoalHeader."No.";
+                GoalLine."Line No." := 0;
+                GoalLine."Workplan No." := "No.";
+                GoalLine."Workplan Line No." := WorkplanLine."Line No.";
+                GoalLine."Key Result Area" := WorkplanLine."Objective Description";
+                GoalLine."Target Description" := WorkplanLine."Strategic Initiative";
+                GoalLine."Measurement Criteria" := WorkplanLine."KPI Description";
+                GoalLine."Target Value" := WorkplanLine."Target Value";
+                GoalLine."Weightage %" := WorkplanLine."Weightage %";
+                GoalLine.Insert(true);
+            until WorkplanLine.Next() = 0;
     end;
 
     /// <summary>
@@ -168,7 +275,12 @@ table 52193473 "Perf Corporate Workplan"
     begin
         if Status = Status::Open then
             exit;
+        // Directorate and department documents generated by the cascade are discarded while
+        // still untouched by the approval flow; anything already submitted blocks the revision.
         GoalHeader.SetRange("Workplan No.", "No.");
+        GoalHeader.SetRange(Status, GoalHeader.Status::Open);
+        GoalHeader.DeleteAll(true);
+        GoalHeader.SetRange(Status);
         if not GoalHeader.IsEmpty() then
             Error(GoalsLinkedErr, "No.");
 

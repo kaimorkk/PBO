@@ -183,6 +183,14 @@ table 52193475 "Perf Goal Header"
                 TestStatusOpen();
             end;
         }
+        field(26; "Department WP"; Boolean)
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(27; "Directorates WP"; Boolean)
+        {
+            DataClassification = ToBeClassified;
+        }
     }
 
     keys
