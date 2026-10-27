@@ -81,6 +81,41 @@ table 52193482 "Perf Setup"
             Caption = 'Send Email Alerts';
             InitValue = true;
         }
+        field(20; "AI Enabled"; Boolean)
+        {
+            Caption = 'Enable AI Assistant';
+
+            trigger OnValidate()
+            begin
+                // Target and review details leave Business Central for the AI provider, so HR must opt in.
+                if "AI Enabled" and GuiAllowed() then
+                    if not Confirm(AIConsentQst, false) then
+                        Error('');
+            end;
+        }
+        field(21; "AI Endpoint URL"; Text[250])
+        {
+            Caption = 'AI Endpoint URL';
+            InitValue = 'https://api.anthropic.com/v1/messages';
+        }
+        field(22; "AI Model"; Text[100])
+        {
+            Caption = 'AI Model';
+            InitValue = 'claude-opus-5-5';
+        }
+        field(23; "AI Use Refusal Fallback"; Boolean)
+        {
+            Caption = 'Use Refusal Fallback';
+            InitValue = true;
+            // Lets the API re-run a declined request on Anthropic's recommended fallback model.
+        }
+        field(24; "AI Max Suggested Targets"; Integer)
+        {
+            Caption = 'Max. AI Suggested Targets';
+            InitValue = 6;
+            MinValue = 1;
+            MaxValue = 15;
+        }
     }
 
     keys
@@ -90,4 +125,39 @@ table 52193482 "Perf Setup"
             Clustered = true;
         }
     }
+
+    /// <summary>
+    /// The API key is kept in isolated storage, never in the table, so it is not exposed
+    /// through table data, configuration packages or exports.
+    /// </summary>
+    [NonDebuggable]
+    procedure SetAIApiKey(NewApiKey: SecretText)
+    begin
+        if NewApiKey.IsEmpty() then begin
+            if IsolatedStorage.Contains(AIApiKeyStorageTok, DataScope::Module) then
+                IsolatedStorage.Delete(AIApiKeyStorageTok, DataScope::Module);
+            exit;
+        end;
+        if EncryptionEnabled() then
+            IsolatedStorage.SetEncrypted(AIApiKeyStorageTok, NewApiKey, DataScope::Module)
+        else
+            IsolatedStorage.Set(AIApiKeyStorageTok, NewApiKey, DataScope::Module);
+    end;
+
+    [NonDebuggable]
+    procedure GetAIApiKey() ApiKey: SecretText
+    begin
+        if not IsolatedStorage.Get(AIApiKeyStorageTok, DataScope::Module, ApiKey) then
+            Error(AIApiKeyMissingErr);
+    end;
+
+    procedure HasAIApiKey(): Boolean
+    begin
+        exit(IsolatedStorage.Contains(AIApiKeyStorageTok, DataScope::Module));
+    end;
+
+    var
+        AIApiKeyStorageTok: Label 'PerfAIApiKey', Locked = true;
+        AIApiKeyMissingErr: Label 'No AI API key has been entered on the Performance Appraisal Setup page.';
+        AIConsentQst: Label 'When you use the AI assistant, target, workplan and review details (job title, KRAs, ratings and comments, but not employee names) are sent to the configured AI provider for processing. Do you want to enable it?';
 }

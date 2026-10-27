@@ -164,6 +164,11 @@ table 52193479 "Perf Review Header"
             Caption = 'Submitted to GM HR & A Date';
             Editable = false;
         }
+        field(27; "AI Feedback Draft"; Text[2048])
+        {
+            Caption = 'AI Draft Appraisal Feedback';
+            // Drafted by Perf AI Mgt for the supervisor to edit; it is never submitted automatically.
+        }
     }
 
     keys

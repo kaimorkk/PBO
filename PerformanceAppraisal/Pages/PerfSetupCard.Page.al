@@ -50,6 +50,36 @@ page 52193475 "Perf Setup Card"
                 field("Notify Supervisor on Submit"; Rec."Notify Supervisor on Submit") { ApplicationArea = All; }
                 field("Notify Employee on Return"; Rec."Notify Employee on Return") { ApplicationArea = All; }
             }
+            group(AIAssistant)
+            {
+                Caption = 'AI Assistant';
+                field("AI Enabled"; Rec."AI Enabled")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Lets staff draft targets from the workplan, and supervisors draft appraisal feedback, with an AI model. Users always review the drafts before anything is submitted.';
+                }
+                field(AIApiKey; ApiKeyText)
+                {
+                    Caption = 'API Key';
+                    ApplicationArea = All;
+                    ExtendedDatatype = Masked;
+                    ToolTip = 'The API key for the AI provider. It is kept in isolated storage, not in the setup table. Clear the field to remove the key.';
+
+                    trigger OnValidate()
+                    begin
+                        Rec.SetAIApiKey(ApiKeyText);
+                        SetApiKeyPlaceholder();
+                    end;
+                }
+                field("AI Endpoint URL"; Rec."AI Endpoint URL") { ApplicationArea = All; }
+                field("AI Model"; Rec."AI Model") { ApplicationArea = All; }
+                field("AI Use Refusal Fallback"; Rec."AI Use Refusal Fallback")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'If the model declines a request, the AI service re-runs it on its recommended fallback model instead of returning an error. Turn off for models that do not support fallbacks.';
+                }
+                field("AI Max Suggested Targets"; Rec."AI Max Suggested Targets") { ApplicationArea = All; }
+            }
         }
     }
 
@@ -72,6 +102,24 @@ page 52193475 "Perf Setup Card"
                 RunObject = page "Perf Appraisal Period List";
             }
         }
+        area(Processing)
+        {
+            action(TestAIConnection)
+            {
+                Caption = 'Test AI Connection';
+                ApplicationArea = All;
+                Image = TestFile;
+                Enabled = Rec."AI Enabled";
+
+                trigger OnAction()
+                var
+                    PerfAIMgt: Codeunit "Perf AI Mgt";
+                begin
+                    CurrPage.SaveRecord();
+                    PerfAIMgt.TestConnection();
+                end;
+            }
+        }
     }
 
     trigger OnOpenPage()
@@ -80,5 +128,19 @@ page 52193475 "Perf Setup Card"
             Rec.Init();
             Rec.Insert(true);
         end;
+        SetApiKeyPlaceholder();
     end;
+
+    local procedure SetApiKeyPlaceholder()
+    begin
+        // Never show the stored key; a placeholder only signals that one exists.
+        if Rec.HasAIApiKey() then
+            ApiKeyText := '**********'
+        else
+            ApiKeyText := '';
+    end;
+
+    var
+        [NonDebuggable]
+        ApiKeyText: Text;
 }

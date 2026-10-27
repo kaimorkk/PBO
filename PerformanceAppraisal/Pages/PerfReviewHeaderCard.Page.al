@@ -49,6 +49,14 @@ page 52193471 "Perf Review Header Card"
                     MultiLine = true;
                     ToolTip = 'The supervisor enters what must be amended before choosing Return to Employee.';
                 }
+                field("AI Feedback Draft"; Rec."AI Feedback Draft")
+                {
+                    ApplicationArea = All;
+                    Visible = AIEnabled;
+                    Editable = IsAwaitingSupervisor;
+                    MultiLine = true;
+                    ToolTip = 'Appraisal narrative drafted by the AI assistant. AI-generated content may be incorrect; edit it so it reflects your own assessment.';
+                }
                 field("Employee Objection"; Rec."Employee Objection") { ApplicationArea = All; }
                 field("Objection Comments"; Rec."Objection Comments")
                 {
@@ -152,6 +160,24 @@ page 52193471 "Perf Review Header Card"
             group(SupervisorActions)
             {
                 Caption = 'Supervisor';
+                action(DraftFeedbackWithAI)
+                {
+                    Caption = 'Draft Feedback with AI';
+                    ApplicationArea = All;
+                    Image = SparkleFilled;
+                    Enabled = IsAwaitingSupervisor and AIEnabled;
+                    Visible = AIEnabled;
+                    ToolTip = 'Drafts an appraisal summary, and fills blank supervisor comments and training needs, from the achievements and ratings. Existing comments are not changed.';
+
+                    trigger OnAction()
+                    var
+                        PerfAIMgt: Codeunit "Perf AI Mgt";
+                    begin
+                        CurrPage.SaveRecord();
+                        PerfAIMgt.DraftReviewFeedback(Rec);
+                        CurrPage.Update(false);
+                    end;
+                }
                 action(ReturnToEmployee)
                 {
                     Caption = 'Return to Employee with Comments';
@@ -353,6 +379,7 @@ page 52193471 "Perf Review Header Card"
             group(Category_Process)
             {
                 actionref(SubmitSelfAssessment_Promoted; SubmitSelfAssessment) { }
+                actionref(DraftFeedbackWithAI_Promoted; DraftFeedbackWithAI) { }
                 actionref(SubmitSupervisorReview_Promoted; SubmitSupervisorReview) { }
                 actionref(ReturnToEmployee_Promoted; ReturnToEmployee) { }
                 actionref(ApproveNextLevel_Promoted; ApproveNextLevel) { }
@@ -360,6 +387,13 @@ page 52193471 "Perf Review Header Card"
             }
         }
     }
+
+    trigger OnOpenPage()
+    var
+        PerfAIMgt: Codeunit "Perf AI Mgt";
+    begin
+        AIEnabled := PerfAIMgt.IsAIEnabled();
+    end;
 
     trigger OnAfterGetCurrRecord()
     begin
@@ -392,4 +426,5 @@ page 52193471 "Perf Review Header Card"
         IsEscalated: Boolean;
         IsWithHRAC: Boolean;
         HasScore: Boolean;
+        AIEnabled: Boolean;
 }

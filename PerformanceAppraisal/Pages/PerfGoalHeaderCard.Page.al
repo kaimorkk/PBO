@@ -68,6 +68,24 @@ page 52193465 "Perf Goal Header Card"
     {
         area(Processing)
         {
+            action(SuggestTargetsWithAI)
+            {
+                Caption = 'Suggest Targets with AI';
+                ApplicationArea = All;
+                Image = SparkleFilled;
+                Enabled = CanEdit and AIEnabled;
+                Visible = AIEnabled;
+                ToolTip = 'Drafts SMART targets cascaded from the workplan objectives for this employee''s level and unit. You choose which suggestions to add and can edit them afterwards.';
+
+                trigger OnAction()
+                var
+                    PerfAIMgt: Codeunit "Perf AI Mgt";
+                begin
+                    CurrPage.SaveRecord();
+                    PerfAIMgt.SuggestGoalLines(Rec);
+                    CurrPage.Update(false);
+                end;
+            }
             action(SubmitToSupervisor)
             {
                 Caption = 'Sign && Submit to Supervisor (HOD)';
@@ -161,6 +179,7 @@ page 52193465 "Perf Goal Header Card"
         {
             group(Category_Process)
             {
+                actionref(SuggestTargetsWithAI_Promoted; SuggestTargetsWithAI) { }
                 actionref(SubmitToSupervisor_Promoted; SubmitToSupervisor) { }
                 actionref(ResubmitAfterAmendment_Promoted; ResubmitAfterAmendment) { }
                 actionref(ApproveBySupervisor_Promoted; ApproveBySupervisor) { }
@@ -169,6 +188,13 @@ page 52193465 "Perf Goal Header Card"
             }
         }
     }
+
+    trigger OnOpenPage()
+    var
+        PerfAIMgt: Codeunit "Perf AI Mgt";
+    begin
+        AIEnabled := PerfAIMgt.IsAIEnabled();
+    end;
 
     trigger OnAfterGetCurrRecord()
     begin
@@ -185,4 +211,5 @@ page 52193465 "Perf Goal Header Card"
     var
         CanEdit: Boolean; // drafting or returned for amendment
         IsPendingHOD: Boolean;
+        AIEnabled: Boolean;
 }
